@@ -1,0 +1,4501 @@
+====== Jim's Linux Notes ======
+
+Accumulated bits & pieces that may be useful for reference.
+
+I've been taking these notes as I learn - so there are bad as well as good ways to approach problems. Some of the information contained herein is out of date or just plain wrong! __Use your brain__.
+
+:!:**WARNING** Use any of these commands at your own risk. They may wipe your hard disk, destroy your data, ruin your business or run off with your partner. Make absolutely sure you understand what you're typing in. If you want my advice, __always test patterns__ using non-invasive commands (like ''ls'' or ''echo'') before executing commands that may alter or remove files (like ''rm'' or ''mv''). **Even this action WILL NOT PROTECT YOUR DATA if you redirect output to overwrite files.**
+
+Note also that there's no attempt to structure these notes into a hierarchy of categories - so liberal use of 'Ctrl+F' (find) is indicated.
+
+===== Networking From The Command Line =====
+
+  * Don't use ''telnet'' (which is insecure) use ''ssh username@server''
+  * To FTP don't use ''ftp'' use ''ncftp'' - it has a better user interface with tab-completion.
+  * Better still, don't FTP at all - use ''sftp'' using your ssh username and password. If your ssh server doesn't support sftp use ''scp'' (which works, but is more awkward - first you need to list with ''ssh'', then reconnect and copy with ''scp''.
+  * If you're using X check out konqueror's ''<nowiki>fish://</nowiki>'' protocol (which is ssh and scp with a nice GUI).
+  * Command-line (non-graphical) web browsers: ''lynx'' (better for javascript) and ''links'' (better for layout).
+
+
+===== Essential Commands =====
+Getting information:
+<code>
+pwd ; id ; uname -a ; man ; <TAB>
+</code>
+Listing files:
+<code>
+ls ; ls -a ; ls -l ; stat
+</code>
+Navigating:
+<code>
+cd ; cd .. ; exit
+</code>
+Managing files:
+<code>
+rm ; rm -r ; mv ; ln -s
+</code>
+
+===== Managing Running Processes =====
+In my opinion, the most informative output is the best:
+<code>
+ps -eF
+</code>
+Note the process ID on the left column, and send signals to it with ''kill'':
+<code>
+kill -KILL 18962
+</code>
+
+
+
+===== Byte-For-Byte Duplication =====
+
+Copying a LINUX disk image from FD0 to home directory:
+<code>
+dd if=/dev/fd0 of=/home/user1/accountname/Desktop/boot.img
+</code>
+Note that the disk doesn't have to be mounted to copy it.
+<code>
+dd if=/dev/eth0 of=/dev/tty0
+</code>
+Echoes input to ethernet card to screen
+<code>
+dd if=diskimage.bin of=/dev/fd0 bs=1024
+</code>
+Copies disk image to floppy disk
+
+===== dd With Floppy Disks =====
+<code>
+dd if=diskimage.bin of=/dev/fd0 bs=1024
+</code>
+
+Copies disk image to floppy disk
+
+<code>
+dd if=/dev/fd0 of=disk.img bs=1024
+</code>
+
+Makes a file called 'disk.img' which is an image of the floppy in fd0
+
+<code>
+mount disk.img /mnt -t auto -o loop
+</code>
+
+Mounts a disk image called 'disk.img' onto /mnt
+
+
+===== Floppy Disks =====
+<code>
+sfdformat /dev/fd0
+</code>
+
+Low level format floppy disk
+
+<code>
+superformat
+</code>
+
+Debian floppy disk tool (very powerful)
+
+
+===== Editing IP Number & Hostname =====
+On some distributions (Slackware I think...) ''/etc/kick.cfg'' is worth looking at. In others the hostname data is mentioned in many files in ''/etc''
+
+===== Screen Blanking =====
+<code>
+bin/setterm -blank 0
+# Sets screen blanking to infinite time
+
+</code>
+===== Redirecting STDERR =====
+
+<code>
+drugwar --help >& drugwar_help.txt
+</code>
+
+Redirects the "help" message to a file. Often help messages get written to STDERR not STDOUT, so a ">" alone to redirect won't work.
+
+===== Search For The Host Name =====
+
+What files contain the hostname on any given system? Try a recursive "find" through ''/etc''...
+
+<code>
+find "/etc/" -name "*" -exec grep -H "whatevermyhostiscalled" {} \;
+</code>
+
+Should give you comprehensive output of any filenames with 'whatevermyhostiscalled' in. Also see 'rgrep' if you've got it.
+
+<code>
+/etc/HOSTNAME
+/etc/hosts
+/etc/mtab # Dynamic file - don't alter it!
+/etc/sysconfig/network
+/etc/system.cnf
+</code>
+
+Uhhh... I guess you could always use the command that tells you the answer:
+
+<code>
+uname
+</code>
+
+
+===== Search For SUSE Hostname =====
+<code>
+/etc/HOSTNAME
+/etc/hosts
+/etc/sysconfig/network
+/etc/system.cnf
+/etc/sane.d/saned.conf
+/etc/mtab
+</code>
+
+===== Hard Disk Setup Commands =====
+<code>
+df
+</code>
+Displays free disk space
+<code>
+cfdisk
+</code>
+Menu-driven partitioning tool (recommended). See also ''gparted'' if you're addicted to X.
+<code>
+fdisk
+</code>
+Scriptable partitioning tool (no menus)
+<code>
+sfdisk
+</code>
+Scriptable and powerful (but user-hostile) disk partitioning tool. Caution!
+<code>
+mke2fs /dev/hda1
+</code>
+Formats the disk as an extension 2 (Linux native) filesystem.
+<code>
+mke2fs -j /dev/hda1
+</code>
+Formats the disk as an extension 3 (Linux native with journalling) filesystem. Note that ext3 **is** ext2 with journalling - you can remount an ext3 system as ext2, and journalling stops. You can do the same in reverse, but the journal needs rebuilding.
+<code>
+83 = Linux Native = e2fs
+82 = Linux Swap = swap
+</code>
+(code numbers for filesystem types)
+
+
+===== Modules =====
+<code>
+insmod <module>
+</code>
+Adds functionality to the kernel by inserting a module.
+Modules are usually stored in ''/usr/lib/modules/'' and are
+suffixed ''.o'' or ''.mod''.
+
+When using ''insmod'' use the module name without the suffix. For example:
+<code>
+insmod ntfs
+</code>
+...adds NT filesystem functionality.
+
+Modules currently running are listed in ''/proc/modules''
+<code>
+lsmod
+</code>
+...lists loaded modules.
+
+<code>
+rmmod <module>
+</code>
+...deactivates a module.
+
+<code>
+modprobe <module>
+</code>
+...loads a module plus the modules it depends on - convenient!
+
+  * Try editing ''/etc/conf.modules'' or ''/etc/modules.conf'' to set
+modules to be loaded at boot time.
+
+===== Interrogating /proc/ Files =====
+To discover pci devices detected:
+<code>
+cat /proc/pci
+</code>
+
+To discover what CPU is running and what RAM is installed:
+<code>
+cat /proc/cpuinfo
+cat /proc/meminfo
+</code>
+
+===== Mounting a Remote Filesystem =====
+
+On the client:
+<code>
+insmod nfs # NFS filesystem module
+</code>
+
+On the server:
+<code>
+insmod nfs # NFS filesystem
+rpc.nfsd # NFS daemon
+vim /etc/exports
+</code>
+
+The edit was the only bit actually necessary in this case - but you need to
+run ''nfsd'' AFTER altering ''/etc/exports'' for it to take effect.
+
+**Note**: ''rpc.nfsd'' requires ''rpc.portmap'' (aka ''portmap'') & ''rpc.mountd''.
+
+**Note**: non-root users can only mount volumes specified in ''/etc/fstab''
+
+===== To Find a String in a Directory (Searched Recursively) =====
+
+<code>
+find . -name '*' -exec grep -l 'FINDME' {} \; > del_me
+</code>
+
+Or if you want to see the information straight away..
+
+<code>
+find . -name '*' -exec grep -l 'FINDME' {} \; > del_me ; cat del_me
+</code>
+
+Or even more neatly...
+
+<code>
+find . -name '*' -exec grep -l 'FINDME' {} \; | xargs ls -1
+</code>
+
+Note: The space between the ''{}'' and the ''\;''
+
+Note: //ls dash one//
+
+This is faster:
+
+<code>
+find . -name '*' | xargs grep 'searchforme'
+</code>
+
+This is best:
+
+<code>
+find . -name '*' | xargs grep -s 'search_for_me' | cat
+</code>
+
+Notice that the grep '-l' option suppresses results that are commented out.
+
+How about trying to find files and line numbers where **both** of two words in them, but you're not sure what case the words are in? In this case I'm searching include files suffixed ".i":
+
+<code>
+find . -iname "*.i" -exec grep -Hni "wordone" {} \; | grep -i "wordtwo"
+</code>
+
+===== Use 'rgrep' =====
+In late distros (M8.0+) try recursive grep in a single command:
+
+<code>
+man rgrep
+rgrep findme directory
+</code>
+
+The traditonal & best way to do this is probably:
+
+<code>
+grep -Rls findme directory
+</code>
+
+...Or older and slower (but available on all systems):
+
+<code>
+find . -name "*" -exec grep -Hi "findme" {} \;
+</code>
+
+...Or faster and newer:
+
+<code>
+rgrep -ls findme directory
+</code>
+
+Handy grep switches include:
+
+<code>
+'-H' : Print match & filename
+'-i' : Case Insensitive
+'-l' : List filename only
+'-R' : Recursive
+'-s' : Suppress error messages
+</code>
+
+===== Use slocate =====
+
+Not yet sure how this command works...
+
+<code> 
+man slocate
+slocate <executable>
+slocate <any file name>
+</code>
+
+I am now. slocate searches a database, not the actual filesystem.
+That's why it's really fast but won't find brand new files.
+Updating the database may take several minutes so should be done
+periodically (eg: with a cron job).
+
+<code>
+updatedb
+</code>
+
+''slocate'' is a securer vesion of ''locate''. ''slocate'' complains if the
+database it's searching is older than eight days.
+
+===== Debian Installation =====
+<code>
+
+/etc/apt/sources.list - get it right!
+apt-cdrom add
+# Unmounts and Mounts a new CD ROM from a multi-CD set
+apt-get update
+# Confirms the additions to /etc/apt/sources.list
+dselect
+# To use a stack of CD ROMs select method 'apt' and
+# insert CD ROMs from set when prompted.
+
+</code>
+===== Red Hat Network Configuration =====
+<code>
+
+/etc/modules.conf/etc/hosts
+# address, full hostname, hostname lookup table
+/etc/sysconfig/network
+# IP Address
+/etc/sysconfig/network-scripts/ifcfg-eth0
+# ADDRESS, NETMASK, NETWORK, BROADCAST, GATEWAY (each = quad)
+
+</code>
+===== Debian Network Configuration =====
+
+  * Address, full hostname, hostname lookup table: ''/etc/hosts''
+  * Modules loaded at boot time: ''/etc/modules''
+  * ''/etc/network/interfaces'' Address, Netmask, Network, Broadcast, Gateway (each followed by a quad - last three optional).
+  * Logon scripts for different ISPs: ''/etc/chatscripts/<ispname>''
+  * Info about different ISPs: ''/etc/ppp/peers/<ispname>''
+  * PPP ISP nameservers (nameserver IP#): ''/etc/ppp/resolv/<ispname>''
+
+===== Debian Dialup Connecting =====
+  * ''pon <isp>'' Connects.
+  * ''poff'' Disconnects.
+  * ''pppconfig'' Configures ISP info.
+
+===== X Setup =====
+<code>
+/usr/sbin/xserver-configure
+</code>
+
+
+
+===== Mouse =====
+<code>
+gpmconfig
+</code>
+Or edit ''/etc/gpm.conf''
+<code>
+pppconfig
+</code>
+
+===== Activating IP Masquerading For Dialup =====
+
+Make sure the client has the gateway IP number specified as their gateway, and the ISP dialup DNS specified as their DNS numbers. Then on the gateway (2.2 kernel) activate:
+
+<code>
+ipchains -P forward DENY
+ipchains -A forward -i ppp0 -j MASQ
+echo 1 > /proc/sys/net/ipv4/ip_forward
+</code>
+
+The final command simply makes a file with the content "1" in the ''/proc'' filesystem. PPP does NOT need to be active in order to activate these commands, so maybe the answer may be to include these files as a script in the startup, such as ''/etc/init.d/''
+
+Note: ipchains is superceded by ipfw
+
+
+===== If In Trouble Check =====
+<code>
+http://www.linuxdocs.org
+</code>
+
+
+
+===== Adding A New Route For A Gateway =====
+
+Can't access the net? Not sure why? Check the routing table:
+
+<code>
+route
+</code>
+
+Or more recently
+
+<code>
+netstat -rn
+</code>
+
+Is a default route listed at the bottom of the table? Is it defined as inside the network segment that's defined by the machine's own IP number and netmask? No? Add a new route:
+
+<code>
+route add default gw <ip_remote_ppp_connection>
+</code>
+
+In Debian 2.2r2 I added the line 'route add default gw "$PPP_REMOTE" ' to
+the script /etc/ppp/ip-up.d/00route so that this command is activated
+once the PPP connection is up.
+
+eg:
+
+<code>
+route add default gw 192.168.1.1
+</code>
+
+===== Controlling Networking =====
+Low level...
+<code>
+ifconfig eth0 down 
+ifconfig eth0 up
+</code>
+Better...
+<code>
+/etc/init.d/network stop
+/etc/init.d/network start
+</code>
+Or even better (on RedHat-based systems)...
+<code>
+service network stop
+service network start
+</code>
+
+===== Debian Module Management =====
+
+''modconf'' configures which modules are inserted into the kernel at boot time. Writes to ''/etc/modules.conf'' which should not be edited manually (supposedly!).
+
+===== IO Ports =====
+<code>
+less /proc/ioports
+</code>
+Info about system interrupts.
+
+
+
+===== Information =====
+
+''hostid'' Does NOT output the current host's IP number in hex. It's supposedly a unique host ID number which is not very useful. (I think it's mostly obsolete.)
+
+''arch'' Prints processor architecture.
+
+
+===== Problems With Swap =====
+On some Caldera machines ''free'' indicates that swap isn't working.
+To activate swap add a line to ''/etc/fstab'':
+<code>
+/dev/hda2 swap swap defaults 0 0
+</code>
+On reboot inittab executes the command ''swapon -a'' which mounts all
+swap disks specified in ''fstab''. This command can also be executed 
+by root without a reboot.
+
+===== Getting Networking Up From Scratch =====
+<code>
+
+ifconfig eth0 up
+ifconfig eth0 192.168.1.100
+route add -net 192.168.1.0 dev eth0
+ping <target>
+
+</code>
+===== Listing Installed Packages (Debian) =====
+<code>
+
+dpkg -l > installed.tmp
+
+</code>
+
+===== Installing A New Boot Block =====
+If you cp -a all files from one disk to another, the master boot
+record will not have been written into sector 1 of the target
+machine, and thus LILO will hang at LI. Try booting from a floppy:
+<code>
+mount /dev/hda1 /hda
+mkdir /boot     # may not be necessary
+cp /hda/boot/boot.b /boot
+lilo -r /hda -i /boot/boot.b
+</code>
+
+In fact this is overly complex. Better try booting from a CD then: (where N is the bootable partition)
+
+<code>
+mount /dev/hdN /mnt
+chroot mnt
+lilo
+</code>
+
+Mandrake 8.2 rescue CD has the option "Mount partitions under /mnt"
+and "exit to shell" which streamlines this process. Watch out,
+because sometimes the LILO installer under Mandrake has a glitch
+in it that makes the default boot device ''/dev/hda5'' when it should
+be ''/dev/hda'', and the default root device ''/dev/hda6'' (often the
+swap partition!) when it should, of course, be the root filesytem
+(''/dev/hda5'' on a typical installation). Boot from CD as above and
+edit ''/etc/lilo.conf'', then run ''lilo'' to sort out these problems.
+
+===== Manipulating Text with cat =====
+
+Join two text files together end-to-end as text3
+<code>
+cat text1 text2 > text3
+</code>
+
+Print out a text file with line numbers
+<code>
+cat -n text1
+</code>
+
+Print out a text file last line to first line
+<code>
+cat -r text1
+</code>
+
+===== Manipulating Text with sort =====
+
+Print out a text file sorted line-by-line in alphabetical order.
+<code>
+sort text1
+</code>
+Useful options include ''-r'', __r__everse order, ''-u'' strip out duplicate lines (leaving __u__nique lines).
+
+
+
+===== Manipulating Text with sed =====
+<code>
+sed -f script file
+</code>
+
+Transforms lines in file according to script.
+
+**eg**: ''1,$s/one/two/g'' - Substitute 'one' for 'two' on every line. (''%'' is another way to say ''1,$'')
+
+**eg2**: ''1,3s/one/two/g'' - Substitute 'one' for 'two' on lines 1 to 3 only.
+
+**eg3**: ''%s/.*/prefix &/g'' - Find the whole of each line ('.' = any character, '*' = any number of the preceding character) and prefix them with 'prefix '. '&' = the pattern that's just been found. ''g'' = global, i.e. don't just replace the first instance on each line, replace every instance.
+
+Note: Escape special characters in find and replace strings with '\'. If your script file is just a single line, use the -e option, and specify the script thus:
+
+<code>
+sed -e 's/.*/prefix\/&\/suffix/g' test1
+</code>
+
+Prefix each line of test1 with 'prefix/' and suffix each line of test1 with '/suffix'.
+
+<code>
+sed -e '/^$/d' file
+</code>
+
+Removes all blank lines from file.
+
+Note that sed interprets ''^'' as the beginning of a line and ''$'' as the end of a line.
+
+Note that ''sed -i'' edits a file in place. Potentially dangerous but handy for scripts.
+
+===== Manipulating Text With Vi =====
+
+Note that vi contains sed-like behavior at the ':' prompt
+
+<code>
+:%s/text/test/g
+</code>
+
+''%'' - The whole file (every line)
+
+''s'' - Substitute
+
+''g'' - Globally (i.e. not just the first instance on each line)
+
+Remember to prefix special characters like ''.*^$&'' with ''\''
+
+''ma'' - Mark (invisible) at cursor position.
+
+''mb'' - Another invisible mark
+
+<code>
+:'a'bco.
+</code>
+
+Paste (**co**py) everything from mark ''a'' to mark ''b'' here ''"."''
+
+<code>
+ma
+mb
+:'a,'bw cut.tmp
+</code>
+
+Make a temporary file which is a piece of marked text.
+
+<code>
+:r cut.tmp
+</code>
+
+Here's a cool vi shortcut:
+<code>
+:%norm jdd
+</code>
+Deletes every other line!
+
+===== Manipulating Text With Paste =====
+<code>
+paste file1 file2 > file3
+</code>
+
+Makes file3 the line-by-line concatenation of file1 and file2. Separated by TABs by default.
+
+<code>
+paste file1 file2 -d 'x' > file3
+</code>
+
+Makes file3 the line-by-line concatenation of file1 and file2
+separated by 'x' instead of TAB. (Only one character, though.
+Multiple characters are treated as a list - on each output line
+the first character is pasted in as the first separator, the
+second as the second separator and so on. This requires more
+than two input file, of course.)
+
+Try:
+
+<code>
+cat file | paste "odd" - -
+</code>
+
+To get "odd" prefix... (needs testing)
+
+===== A Note About Join =====
+<code>
+join
+</code>
+A very powerful database-merging command. Indexed lists can be merged to make tables. Not simple to use. A typical use would be  if you have two text files, one with login names and UIDs on each line, another with UIDs and Real Names. You can merge these into one file inteligently, so you have three fields per line, and empty fields where data is missing. Read the ''man'' page.
+
+===== Selectively Viewing Columns Or Fields =====
+<code>
+
+cut -b 3-10 file1
+# Show just columns 3 to 10 of file1.
+cut -f 2 file1
+# Show just field 2 of file1. By default field delimiter is TAB.
+# Use option -d 'x' to set delimiter as x.
+cut -d ' ' -f 1-2,4 file3
+# Show columns 1,2 and 4 from file3, which is composed of columns
+# separated by spaces.
+
+</code>
+
+===== Manipulating Text With Perl =====
+<code>
+perl -pe 's/\n/\n\n/g' file1
+</code>
+Double-space file1
+<code>
+perl -pe 's/\r\n/\n/' file1.dos > file1.unx
+</code>
+Convert ''file1.dos'' (which has DOS CR-LF line endings) into the Unix text file ''file1.unx'' with LF line endings only.
+<code>
+perl -pe 's/(^.*)(--)(.*$)/$3$2$1/' file1.txt > file2.txt
+</code>
+Take everything before "--" on each line of ''file1.txt'' and swap it with everything after "--". (The brackets save the found information into $1, $2 and $3) This process may lose whitespace - which can be retained thus:
+<code>
+perl -pe 's/(^.*)(--)(.*$)/$3 $2 $1/' file1.txt > file2.txt
+</code>
+It's more challenging when you want to substitute the "'" character:
+<code>
+perl -pe 's/(^.*)/\047$1\047,/' eg
+</code>
+converts lines of a file called ''eg'' that look like this:
+<code>
+eg
+</code>
+into this:
+<code>
+'eg',
+</code>
+... which can be useful when building array statements.
+
+You may have noticed that recently I changed all of the titles in this wiki file from UPPERCASE to more legible Title Case. No tedious editing for me! I did it with this one-liner:
+<code>
+perl -pe 'if(/^===== /){ s/(\w+)/\u\L$1/g }' linux_notes.txt
+</code>
+I simply redirected the output to a temporary file and then replaced the original linux_notes.txt with it.
+
+===== Converting A Multi-Line List Into Comma-Seperated Format =====
+<code>
+
+perl -pe 's/\n/,/g' multiline.txt > commaseperated.txt
+
+</code>
+
+===== Converting Characters with 'tr' =====
+
+The command ''tr'' is specifically meant for character translation! It works from STDIN to STDOUT. Try:
+
+<code>
+cat text.mac | tr '\r' '\n' > text.unx
+</code>
+
+The option -s (squeeze repeats) looks handy, too!
+
+Special characters: (code, bash keys, octal code, name)
+
+<code>
+\a = ^G = \007 = Bell
+\b = ^H = \010 = Backspace
+\f = ^L = \014 = Form Feed
+\n = ^J = \012 = Line Feed
+\r = ^M = \015 = Carriage Return
+\t = ^I = \011 = Tab
+\v = ^K = \013 = Vertical Tab
+\\ =  \ = \134 = Backslash
+</code>
+
+**eg1**: Remove Form Feed characters from test file, pipe the output to test.no_ff ...
+
+<code>
+tr -d '\014' < test > test.no_ff
+</code>
+
+**eg2**: Squeeze out blank lines so that there's no blank lines
+
+<code>
+cat test | tr -s '' '\012' > test.no_lflf
+</code>
+
+...Which is, of course, exactly the same as:
+
+<code>
+tr -s '' '\012' < test > test.no_lflf
+</code>
+
+The best way to use 'tr' when dealing with unprintable characters is with octal character values:--
+
+<code>
+tr -d '\000-\010\013-037\177-\377'
+</code>
+
+Strips out all values that aren't TAB, LF, or the printable low-value ascii charset (Hex 20-7E = Octal 40-176).
+
+===== Number Sequences =====
+<code>
+seq -w 5000
+</code>
+Prints numbers 0000 to 5000 (the '-w' pads with leading zeros).
+<code>
+seq 10 2 100
+</code>
+Prints numbers from 10 to 100 in steps of two: 10, 12, 14 etc.
+
+===== Iterating Or Looping Scripts =====
+<code>
+for i in $(seq 10); do echo 'test'$i; done
+</code>
+Backticks or ''$()'' make the command inside them execute first and substitute
+its return value into the command line. They're exactly the same, but ''$()'' is more easy to read in various fonts.
+
+Countdown:
+<code>
+let i=100; while [$i -gt 0]; do echo $i; let i--; done;
+</code>
+Note [ ] allow evaluation inside.
+Note '''let i--;''' means the same as '''let i = $i-1;'''
+
+Endless looping:
+<code>
+while true; do echo again; done;
+until false; do echo again; done;
+</code>
+
+Do something to everything in this directory
+<code>
+for i in $(ls); echo $i; done;
+</code>
+
+Finding with attractive output:
+<code>
+for i in $(find /etc); do grep -sH 'fudge' $i; done;
+</code>
+
+===== Where Is The Binary? =====
+<code>
+which man
+</code>
+Returns the path & filename of the 'man' binary currently in use.
+
+
+===== 3com Ethernet Cards =====
+
+''3c5x9setup'' is a utility for setting the active port, the IRQ settings etc. Try:
+
+''3c5x9setup -a'' to show current settings.
+
+''3c5x9setup -F0 -w -f'' to activate the RJ45 port.
+
+''3c5x9setup -P0x330 -w -f'' to set the interrupt to 0x330 (usual = 300).
+
+''3c5x9setup -Q3 -w -f'' to set the card's IRQ to 3.
+
+===== Scope Hex Files =====
+<code>
+hexdump -c file | less
+</code>
+A handy way to see line feeds & carriage returns. Many other options available. Try also:
+<code>
+od
+hexedit
+</code>
+
+===== SUSE Mounting On Boot =====
+
+Check the file ''/sbin/init.d/boot.local'' for extra disks to be mounted at boot time. (Installer server does this). The SUSE manual compares this file to ''AUTOEXEC.BAT''.
+
+Surely this comparison is inappropriate. The disk mount function is handled by ''/etc/fstab'', while ''/sbin/init.d/boot.local'' executes files at boot time. Maybe the key here is the word //extra// - are SUSE referring to removable devices?
+
+===== Things To Check About 'lpr' Problems =====
+
+''rpcinfo'' Provides information about RPC - may help with an LPR RPC error.
+
+===== NIS By Hand =====
+<code>
+/etc/yp.conf
+/etc/sysconfig/network
+/etc/hosts
+</code>
+
+ON THE CLIENT...
+
+''ypset'' Point ypbind at a particular server
+
+''ypbind'' Connect to NIS server - NIS client daemon
+
+''ypwhich'' Disply the name of the NIS server
+
+''ypoll'' Display the version of the NIS map at the NIS server.
+
+''domainname'' Display the NIS domain name - in our case, 'fudge'. Not the same as the network domain name.
+
+''ypmatch'' Display the value of NIS keys - I don't get this!
+
+''ypcat passwd'' Show the yppasswd file.
+
+''yppasswd'' Change an NIS user password in the NIS database.
+
+ON THE SERVER...
+
+''ypserv'' NIS server daemon - continuously running.
+
+''ypcat'' Print the values of the yp database
+
+''yppasswdd'' A daemon which automatically updates the NIS database in reponse to ''yppasswd'' changes.
+
+''ypinit'' Build new NIS database - this is called by /var/yp/Makefile.
+
+(First ''ypserv'' is stopped, then ''ypinit'' is called, then ''ypserv'' is restarted.)
+
+Adding a new YP user is as simple as:
+
+<code>
+ssh ypserver
+sudo useradd -c "Real Name" -m -g "defaultgroup" -p "" newuser
+sudo ypremake
+</code>
+
+Note: In our case ''ypremake'' is a small script which calls ''ypinit -m'' (makes a master NIS database) and presses "Ctrl-D" to agree that this (the server) is the only one that needs remaking.
+
+''yppush'' Propagates NIS maps to slave servers - we don't need this!
+
+''ypxfr'' Transfer NIS database from server to local host. Is this what clients do each time they restart? Not sure!
+
+CHECK OUT clients' ''/var/yp/fudge/'' for 2 x dbm NIS map file.
+
+
+===== NIS Server =====
+Alter  ''/var/yp/Makefile'' thus:
+<code>
+all: passwd group shadow hosts \
+</code>
+
+**See also:** http://www.mandrakeuser.org/docs/connect/cnis.html
+
+Use ''linuxconf'' at the command line to configure clients. The GUI is buggy!
+
+===== Mandrake 7.2 Setup In Access Space =====
+
+:!: NOTE - This section of notes is from around 2000. I've kept them here for historical interest only. Note how then "USB" was seen as an unnecessary extra for desktop PCs!
+
+First use ''tomsrtbt/fdisk'' to DELETE all partitions except the compaq bios partition and start from scratch. Otherwise Mandrake may make some bad decisions about how to allocate already-existing partitions.
+
+  * Install from CDROM - use expert mode
+  * Install all packages except games and Applications Development to fit into a 1.5gB partition. Don't forget to install DrakConf, which is not selected by default in "Expert" mode. If you forget:
+
+<code>
+#!/bin/sh
+rpm -i /mnt/cdrom/Mandrake/RPMS/perl-GTK-0.7003-4mdk.i586.rpm
+rpm -i /mnt/cdrom/Mandrake/RPMS/drakxtools-1.1.5-31mdk.i586.rpm
+rpm -i /mnt/cdrom/Mandrake/RPMS/DrakConf-0.52-41mdk.i586.rpm
+</code>
+Deactivate the following jobs from running at boot time {The installer allows this).
+<code>
+httpd - Resource-hungry web server
+identd - Unnecessary user ID daemon
+inn - Usenet news server
+ipop3 - POP3 server (guess)
+named - DNS server
+postfix - Mail Transport Agent: no SMTP server needed
+postgresql - SQL database daemon
+usb - Not needed if no USB devices
+wu-ftp - FTP server
+</code>
+
+  * Printing system - not yet determined ''CUPS'' or ''lpr''. ''CUPS'' looks good, though!
+  * Select "use NIS" for passwords
+  * Add no more users (Suggest - add a user called "local" pw "local" for NIS failures & other emergencies
+  * Do create a boot disk, and LABEL IT NOW with the distro and machine IP# & hostname
+  * Select the boot loader as ''lilo'' (or ''grub'').
+
+As well as ''/dev/hda1'' as the bootable device, also add an alternative bootable device called 'bios' for the Compaq Diagnostics partition
+
+  * Choose the latest verion of XFree86
+  * Make sure that the minimum screen resolution is 800x600 in 16bit colour. No user machines should run with less.
+  * Remove time-consuming cron jobs
+
+<code>
+mkdir /etc/cron.disabled
+mv /etc/cron.daily/hungry-job /etc/cron.disabled/
+</code>
+
+  * Configure ''/etc/fstab''
+  * ''mkdir /CD1 /CD2''
+
+OPTIMISE THE HARD DISK
+
+Add the following line to the end of file ''/etc/rc.d/rc.local''
+<code>
+''hdparm -c1 -d1 /dev/hda''
+</code>
+
+To test hard disk speed try:
+<code>
+hdparm -t /dev/hda
+</code>
+
+To change runlevel to stop X (prep for update) ''init 3''
+
+To return to X ''init 5''
+
+''lynx ftp://mirror.linuxuk.net''
+
+  * Check out XFdrake for monitor reconfiguration.
+
+===== Finding Information in dmesg =====
+<code>
+dmesg | grep hda
+</code>
+
+Returns all lines in dmesg that mention the string 'hda'
+
+===== DNS Servers Are Specified In =====
+
+<code>
+/etc/resolv.conf
+</code>
+
+===== Access Space To Do =====
+
+  * Check the floppy disk mounting system
+  * Icons must work on all distros
+  * Check out the dcopserver problem
+
+Hmmm... I made this note five or more years ago, and what's changed?
+
+  * We're now refusing to support floppy disks - they're incredibly unreliable. Instead we encourage users to have USB sticks - and we have USB sockets on the front of the machines.
+  * Mixing distros with one fileserver is still problematic. Desktop icons made by one distro may not work with another system.
+  * The ''dcopserver'' problem was related to KDE. We had problems when the link between a fileserver and a client failed and was then re-established. Changing the NFS options in ''/etc/fstab'' solved the issue.
+
+===== Debian Module Selection =====
+
+''autofs'' - Kernel Automounter\\
+''hfs''    - Apple Mac Filesystem\\
+''nfs''    - Network Filesystem\\
+''nfsd''   - NFS Server\\
+''smbfs''  - Samba Network Filesystem\\
+
+===== Creating a CUPS lpd Client =====
+
+In the file ''/etc/cups/cupsd.conf'' make sure of the lines:
+<code>
+Browsing On
+BrowseInterval 0
+</code>
+To detect CUPS servers and to prevent data from propagating from the machine. 
+
+Restart cups after the changes:
+<code>
+/etc/rc.d/init.d/cups restart
+</code>
+
+Ensure that the client's ''/etc/hosts'' file is up to date. Essentials include ''localhost'', NIS server, printserver.
+
+Get the latest edition:
+
+<code>
+cp /home/Public/Config/hosts /etc/hosts
+</code>
+
+''KUPS'' (CUPS Admin) on Mandrake 7.2:\\
+  * Delete all existing printers
+  * Add a new Printer
+Type: ''LPD''\\
+Host: ''coyote''\\
+Queue: ''lp''\\
+Pick List: //should show HP LaserJet Series//\\
+
+**Note** Under 7.2 fewer drivers are available.
+
+Choose **options** and pick ''papersize A4''\\
+Printername: ''lp''\\
+Printer Description: ''HP / HP Laserjet Series''\\
+Printer Description: ''HP / LaserJet III Series'' //(Under Mandrake 8.0)//\\
+Physical Location: ''Lowtech Skip''
+
+Okay!
+
+Show lp Infos
+
+Local print system:
+
+Type: ''Local printer''\\
+URI: ''%%ipp://akira.lowtech.org:631/printers/lp%%'' //(Local Print Queue)//\\
+Description: ''HP / HP Laserjet series''\\
+Location: ''Lowtech Skip''\\
+State: ''Idle''\\
+
+Remote printer:
+
+Device: ''%%lpd://coyote/lp%%''\\
+Model: ''HP LaserJet Series CUPS v1.1''\\
+
+Go to the "Print" section and the "Properties" specifies papersize **US Letter**!! Select **A4** and save!
+
+That last bit doesn't work BUG!BUG!BUG!
+
+If you print now, it'll default to US Letter. Right click on the **lp** icon
+  * Now set the papersize to A4
+  * Now go for a test page. Check the properties A4, not US Letter? Great - now go for it!
+
+Don't forget to update ''coyote.lowtech.org/etc/hosts.lpd''
+
+''hosts.lpd'' is a list of hosts that are allowed to print
+
+===== Printing From Clients =====
+
+Print to a "locally connected" ''lp'' - not a network printer.\\
+KUPS registers the printer as ''%%ipp://local.host.name:631/printers/lp%%''
+
+===== Printer Setup On Mandrake 8.1 =====
+
+This has all become complex, but the following procedure works...
+
+1. Make sure that the client's ''/etc/hosts'' includes an entry:
+<code>
+192.168.1.49 coyote.lowtech.org coyote
+</code>
+
+2. Make sure that the server (coyote) includes the client in ''/etc/hosts'' and ''/etc/hosts.lpd''
+
+3. On the client edit ''/etc/cups/cupsd.conf'' to change the line
+<code>
+# BrowseInterval 30
+</code>
+to
+<code>
+BrowseInterval 0
+</code>
+
+4. Fire up a web browser and point it to ''%%http://localhost:631%%''
+<code>
+        Pick 'Printers'
+        Add Printer
+        Name: lp
+        Location: Lowtech Skip
+        Type: HP LaserJet III
+        Driver: HP LaserJet III with Gimp Print
+        URI: lpd://clientname/lp
+        OK
+        Pick 'Configure Printer'
+        Choose A4 Page Size
+        Choose Image Type 'photograph'
+        OK
+</code>
+
+===== List Only Directories =====
+<code>
+ls -l | grep '^d'
+</code>
+Picks up //newline//''-d'' combinations output by ''-l'' option. Better and much simpler is this:
+<code>
+ls -da .*/ */
+</code>
+The ''-a'' option should make the ''.*/'' obsolete - but it doesn't!
+
+===== Displaying Specific Information About Files =====
+<code>
+
+# stat is a powerful listing tool
+ls -al <files>
+# A fair amount of information
+stat <files>
+# Lots more information as well!
+
+stat -t <files>
+# Terse listing format - excellent for piping.
+stat -t <file> | cut -d ' ' -f 1,2
+# Displays only filename and byte-size
+# Fields 1 and 2 - stat output delimiter by spaces
+
+# However, this is fiddly, and it may trip over with
+# filenames that have spaces in them - it's much better
+# to format the data with the -c option:
+stat -c "%n"
+# Filenames
+stat -c "%n %s"
+# Filenames and sizes
+
+</code>
+===== Determining The Type Of A File =====
+<code>
+
+# 'file' detects type of file eg
+file test.txt
+test.txt: ASCII text
+file <file>
+file -i <file>
+# Prints just the filetype in MIME format, eg:
+file -i filename
+filename: text/plain; charset=us-ascii
+
+</code>
+===== Information About Text Files =====
+
+''wc -l file1'' ... Prints number of lines in file1
+
+''wc -w file1'' ... Number of words in file1
+
+''wc -c file1'' ... Number of characters (bytes) in file1
+
+''wc -L file1'' ... Length of the longest line in file1
+
+===== Information About Graphic Files =====
+You can get cunning with 'file' and 'cut'.
+<code>
+file gfx/*.jpg | cut -d ',' -f 4
+</code>
+Prints out the image sizes in the form
+<code>
+800 x 600
+640 x 480
+72 x 72
+</code>
+Unfortunately, it doesn't include the filename, and the line...
+<code>
+file gfx/*.jpg | cut -d ',' -f 1,4
+</code>
+...results in ugly output.
+<code>
+gfx/eg.jpg:     JPEG image data, 600 x 600
+</code>
+It's possible to make a recursive command line thus:
+<code>
+for i in `ls gfx/*.jpg`; do echo $i ' '; file gfx/*.jpg | cut -d ',' -f 4; done;
+</code>
+Which creates this output:
+<code>
+gfx/eg.jpg 600 x 600
+</code>
+But that's ugly, and the recursion takes longer. So how about being really cunning and changing the output of 'cut' so that it can be passed through 'cut' a second time?
+<code>
+file gfx/*.jpg | cut -d ',' -f 1,4 --output-delimiter=:
+</code>
+returns the following:
+<code>
+gfx/eg.jpg:     JPEG image data: 600 x 600
+</code>
+(The comma in the output is now a colon.) So now the following is possible:
+<code>
+file gfx/*.jpg | cut -d ',' -f 1,4 --output-delimiter=: \
+| cut -d ':' -f 1,3 --output-delimiter=''
+</code>
+Which outputs...
+<code>
+gfx/eg.jpg 600 x 600
+</code>
+Oh yes! And much, much faster than that recursive line above.
+
+===== ImageMagick identify =====
+
+Now I've discovered the ''identify'' command from the ''ImageMagick'' suite:
+<code>
+for i in *; do identify -format "%f %w %h" $i; done
+</code>
+This outputs name, width and height. You can get names plus a single figure for total number of pixels thus:
+<code>
+for i in *; \
+do echo -ne "$i\t" >> pixelinfo.txt \
+&& identify -format "%w %h" $i | bc >> pixelinfo.txt; \
+done
+</code>
+That's okay, but it is better to use the ''-ping'' option, which is faster (I think it only opens the first part of the image, rather than the whole thing).
+<code>
+identify -ping -format "%f %w %h" $i
+</code>
+However, this falls over when identifying a multi-image GIF. The "%f" returns ''namenamenamename'' for a four-frame GIF, for example. To suppress this, just identify the first frame, by appending [0] to the filename.
+<code>
+identify -ping -format "%f %w %h" $i[0]
+</code>
+This also works fine on single-image file formats - so imagemagick will handle ''example.jpg[0]'' just as well as it'll handle ''example.jpg''.
+
+===== Backing Up Lowtech Website Multiple Directories =====
+<code>
+mkdir website
+cd website
+wget -r -l20 -L -x ftp://username:password@ftp.lowtech.org/e:/lowtech/*
+wget -r -l20 -L -x ftp://username:password@ftp.lowtech.org/*
+</code>
+
+  * -r = recursively, down through directories
+  * -l20 = twenty levels
+  * -L = follow symbolic links only (i.e. don't skip to another server)
+  * -x = if needed make a local directory tree to receive the data
+  * Use the low security read only access codes:
+  * username: ltbackup
+  * password: xxxxxxxx
+
+===== Notes Installing Hasciicam & Camstream On The Network =====
+
+In order to install hasciicam I needed to install ''aalib''. Compiling was no problem, but installing was impossible because of permissions. I had to:
+
+<code>
+chmod 777 /usr/local/lib
+chgrp ASpace /usr/local/lib
+</code>
+
+Recommend also
+
+<code>
+chmod 777 /usr/local/man
+chmod 777 /usr/local/man/*
+chgrp 777 /usr/local/man
+chgrp 777 /usr/local/man/*
+</code>
+
+Necessary to install:
+
+''libjpeg62-devel-6b-19mk.i586.rpm''\\
+''aalib-1.4rc5.tar.gz''
+
+===== USB Webcam Installation =====
+
+Often USB drivers seem to get mixed up - which can cause machines to hang permanently (Hard Reboot!). Try removing and reinstalling all modules associated with the USB port and video.
+
+<code>
+rmmod se401     # Kensington WebCam
+rmmod videodev  # Required by se401
+rmmod usb-ohci  # Compaq USB card - required by se401
+rmmod usbcore   # Basic USB system required by usb-uhci
+insmod usbcore
+insmod usb-uhci # On Mandrake 8.0 this fails on boot
+insmod videodev
+insmod se401
+</code>
+
+Paths:
+  * /usr/bin/local/hasciicam
+  * /usr/bin/local/camstream
+
+<code>
+Suggested Settings
+
+hasciicam -s80x50
+
+Camstream
+
+Mode: FTP to server
+Server: ftp.lowtech.org
+User: webcam-access
+Pass: upload-stream
+Dir: /lowtech/access/webcam/
+Number Sequentially
+Max Seq#: 8
+Timestamp: y
+Font: Fixed (Misc) 14 / Bitstream Charter 11
+Image type: JPEG
+Resolution: 176x144 (QCIF)
+Snapshot Mode: y (?)
+</code>
+
+Thanks to http://members.brabant.chello.nl/~jvreeken/e401
+===== Setting The Correct Keymap =====
+<code>
+
+loadkeys -d
+loadkeys defkeymap
+# Loads the default keymap from
+/usr/lib/kbd/keymaps/defkeymap.map.gz
+/usr/share/keymaps/defkeymap.map.gz
+# Loads the uk keymap:
+loadkeys uk
+
+</code>
+===== Setfont Now Renamed Consolechars =====
+<code>
+consolechars -d # Default setting
+consolechars -f gr8x8 # 8x8 fonts gets 80x50 display
+</code>
+
+Check ''/usr/lib/kbd/consolefonts/'' for font files. Use the unqualified base name of the fonts - without extensions.
+
+===== Compiling & Installing Downloaded Sources =====
+
+If you have all of the required libraries and a good archive then this should be all that's needed:
+
+<code>
+./configure
+make
+make install
+</code>
+
+Typical problems involve not having permission to write to some directories into which you want to install. This is an issue when you're local root on an NFS network, where ''/usr/local/'' is mounted over NFS.
+
+To compile written source code try:
+
+<code>
+gcc -o binaryname sourcefile.c
+</code>
+
+To establish dependencies for a pre-compiled binary try:
+
+<code>
+ldd binary
+</code>
+
+===== Printer Commands =====
+<code>
+lpr -P <printername> <filename> spool to printer
+laser printer= lp7
+EG: lpr -P lp7 <filename>
+colour printer=lp
+/etc/printcap # lists printers & printer settings
+lpr <file>
+# Sends a file to the printer
+
+</code>
+===== Line Printer Activation & Admin =====
+<code>
+
+lpd                # Line printer daemon
+lpc status         # Report status of lpd's
+lpc>               # interactive command - many options
+lpc> restart lp    # stop & restart lp queue
+lpc> topq lp james # print james's print jobs on lp next
+lpq                # view lp queue
+lprm user          # remove user's jobs from  queue
+
+</code>
+
+
+===== Using ''rpm'' =====
+<code>
+rpm -i <packagename>
+</code>
+
+To install packages. Use --test to test without action, and --force to
+force overwrites - even overwriiting newer with older. RPM returns
+dependency information. Tip: do everything from a --test script, and
+add extra lines for all the dependencies that appear. Once the script
+is complete, then remove the --test parameters and go!
+
+<code>
+rpm -qlp <rpmname>
+</code>
+
+Query an RPM to find out what files it has in it.
+To search an archive of rpms for a particular
+application try:
+
+<code>
+cd /mnt/cdrom/Mandrake/RPMS/
+for i in `ls`; do rpm -qip $i | grep -s 'application' > /dev/null && echo $i; done;
+</code>
+
+How about this? One line and it doesn't need cd-ing
+
+<code>
+for i in `find /mnt/cdrom/Mandrake/RPMS/`;do rpm -qlp $i > /dev/null && echo $i; done;
+</code>
+
+===== Network Problems At Access Space =====
+
+After a power off client machines may have problems connecting to the NFS server. Specifically, they refuse to mount remote directories ''/home'' & ''/usr/local'' They report a DCOPSERVER error.
+
+Originally, we thought that the cure was this:
+
+  - Power Down All Client Machines
+  - Restart the NFS server
+  - Power up all the client machines
+
+We speculated that the problem may be to do with the network becoming congested with unfulfilled RPC requests generated while clients boot but the NFS server is unavailable.
+
+Now we know the problem is soluble much more easily: make sure all client machines mount remote filesystems in a way that's interruptible.
+
+<code>
+vi /etc/fstab
+192.168.1.2:/home /home nfs rsize=8192,wsize=8192,intr,timeo=14 0 0
+</code>
+
+If the server falls over, afer 14 seconds clients will give up trying to connect and throw an error. If necessary, ''/home'' can be unmounted and remounted without a reboot:
+
+<code>
+umount -lf /home
+mount -a
+</code>
+
+===== Instant Dcopserver Deglitch =====
+
+On Mandrake 8.1 log on from the console. Use ''df'' to check
+whether the NFS remote mounts have worked. If they have,
+but X still fails to log in, then...
+<code>
+ls *.DCOP*
+</code>
+Identify the files relevant to the current host:
+<code>
+ls *.DCOP*hostname*
+</code>
+Remove those files!
+<code>
+rm *.DCOP*hostname*
+</code>
+Now log in under X and everything //should// work.
+
+===== Notes For IDE Drive Installation =====
+
+Jumper settings can be critical:
+
+<code>
+DS = drive select
+CS = cable select
+SP = slave present
+MP = master present
+</code>
+
+===== Using tar =====
+
+Unpack an archive, make an archive.
+<code>
+tar xvvzf files.tgz
+tar cvvzf files.tgz files
+</code>
+
+Note that ''tar'' doesn't need a ''-'' in front of its switches, and that ''f'' should come last, before the filename.
+
+===== Using tar to Update a Website =====
+
+  - ssh into the development domain.
+  - Ensure you're in the root directory, so ''ls'' returns ''htdocs/'' as one of the visible items.
+  - ''tar czvf newsite.tgz htdocs/''
+  - ''scp newsite.tgz username@liveserver.eg:''
+  - exit
+  - ssh into the live server
+  - Make a backup of the old site (if any): ''tar czvf oldsite.tgz htdocs/''
+  - ''mv htdocs htdocs_old'' -- shift the old content out of the way - but so it could be returned again in an instant.
+  - ''tar xzvf newsite.tgz'' -- this should create a new ''htdocs'' directory with all the new content inside, and in place.
+
+===== Problems Accessing the CDROM on Goofy =====
+
+The problem turned out to be quite straightforward. The device 
+seemed to work okay, but simply would not allow access to the 
+directory ''/mnt/cdrom/''
+
+In the end the answer was that the symbolic link ''/dev/cdrom''
+was pointing to ''/dev/hdc'' while ''dmesg'' indicated that the drive
+was detected as ''/dev/hdd''
+
+Find out what's happening:
+<code>
+dmesg | grep cd
+ls -l /dev/cd*
+</code>
+Fix it!
+<code>
+cd /dev
+mv cdrom cdrom.bak
+ln -l hdd cdrom
+</code>
+
+===== Linuxconf =====
+
+<code>
+Boot -> Bootconfig
+
+cp /mnt/fd0/working/lilo.conf /etc/lilo.conf
+lilo
+</code>
+
+Running lilo at the command line allows the changes to lilo.conf
+to be written into the boot block. Don't forget to do this before
+a reboot!
+
+===== Another Mandrake 8.1 Install =====
+<code>
+
+Language? UK English
+Accept Conditions
+Install Mode? Expert
+SCSI Interface? No
+Mouse? PS2 Standard
+Keyboard? UK
+Security? Low
+Hard Drive Partitions:
+        hda3 22MB Compaq Config 0x12 (beginning of disk)
+        hda6 200MB Linux Swap 0x82 (end of disk)
+        hda5 1.7GB Ext3 0x483 (rest of disk)mount point = /
+        Format hda5, hda6? Y -> Advanced -> Check Bad Blocks Y
+        (Wait 4 mins - no prompts, don't panic)
+Do you have the 2nd CD ROM? Yes
+Package Selection (jed: Selected only)
+        Office Workstation
+                cups-drivers
+                foomatic
+                kups
+        Multimedia Station
+                Other
+                        bcast
+                        gd-utils
+                        gif2png
+                        gimp-perl
+                        libungif-progs
+                        qcad
+                        transfig
+                        xfig
+                        xmorph
+                        xpaint
+                        xpcd-gimp
+                        zgv
+        Internet Station
+                Other
+                        mutt (postfix)
+        Network Computer
+                Other
+                        autofs
+        Configuration
+        Scientific Workstation
+        Console Tools
+                Utilities
+                        Other
+                                dosemu
+                                dosemu-freedos
+                                xdosemu
+                                zip
+        Development
+        Documentation
+        KDE Workstation
+        Gnome Workstation
+CUPS, postfix and webmin servers will be running on boot? Y
+(If the machine crashes during install, don't panic, just go back
+and do the same thing again. Frequently crashes can be induced by
+selecting individual packages too quickly. Be slow and deliberate,
+highlight the package first, then select it after the description
+appears.)
+Set Root Password? Skipraider
+        Authentication? NIS
+        NIS Domain? fudge
+        Broadcast? Y
+Add User? Cancel {Don't add a user)
+        error (ignore this and continue)
+Configure Networking
+        Auto Detect
+        LAN Connection
+        3com509
+                Another Network Connection? N
+        IP Address? 192.168.1.56 (eg for gnasher)
+        Netmask 255.255.255.0
+        Host Name? gnasher.lowtech.org
+        DNS Server? 195.10.253.11 (we should set up our own)
+        Gateway? 192.168.1.1
+        Proxies? (no proxies)
+# After installation:
+        vi /etc/fstab
+        # Add the following lines
+                192.168.1.2:/home /home nfs defaults,nolock 0 0
+                192.168.1.2:/usr/local /usr/local nfs defaults,nolock 0 0
+                192.168.1.35:/CD1 /CD1 nfs ro,user,noauto 0 0
+                192.168.1.35:/CD2 /CD2 nfs ro,user,noauto 0 0
+        mkdir /CD1 /CD2
+# login as root
+http://localhost:631 (cups admin)
+        printers -> add printer
+
+</code>
+===== Boot Hack =====
+<code>
+boot: linux init=/bin/bash
+mount -o remount
+# Changes
+
+</code>
+===== Replicating Sun Workstations =====
+<code>
+fdisk sda
+# Put swap at the end of the disk
+# not just for safety, but also for speed.
+mkfs.ext2 -c /dev/sda1
+cp -av [^mp]* /dev/sdb1 /dev/sda1
+silo -f # Force
+
+</code>
+===== Icecast =====
+<code>
+
+http://cvs.icecast.org
+
+lynx -dump http://icecast:8000/stream.mp3
+wget
+
+Normally you don't give the URL of the stream directly
+but instead provide a link to an .m3u or .pls = text files
+which give the stream location. (.m3u is simpler).
+
+icok200
+mp3ok200
+
+wget ftp://speakeasy.rpmfind.net/
+
+tar xvfz ice
+
+/usr/local/icecast/
+cp /usr/local/icecast/conf/icecast.conf.dist icecast.conf
+vi /usr/local/icecast/conf/icecast.conf
+
+/usr/local/icecast/
+/usr/local/icecast/
+
+vi /etc/rc,local
+# insert:
+/usr/local/bin/icecast/bin/icecast
+
+</code>
+===== Installing And Compiling =====
+<code>
+tar xvfz archive.tar.gz
+cd archive
+./configure
+make
+make install
+</code>
+
+
+===== Converting Image Files =====
+
+The ImageMagick suite provides various utilities:
+
+To convert a g3 fax file into a greyscale JPEG rotated and scaled:
+<code>
+convert -colorspace GRAY -crop 0x0 -geometry 575x768 \
+-border 4x4 -bordercolor white -rotate 90 -quality 50 \
+fax:incomingfax.fax jpg:incomingfax.jpg
+</code>
+
+To fade one image into another over 9 intermediate steps.
+(The "blend" method is supposed to be somehow better than "dissolve" - though I couldn't see the difference with the test images I used!)
+<code>
+for i in $( seq 0 10 100 ); \
+do composite -blend $(( 100-$i )) 1.png 2.png out_$i.png; \
+done
+</code>
+
+To convert 32 numbered icons into one long wide picture
+<code>
+montage *z.png -background '#000000' \
+-texture bg.png -geometry +0+0 -tile 32 out.png 
+</code>
+
+Note: typically montage is used to make a page full of titled
+icons. ''-geometry +0+0'' butts each image up against the next with
+no space for text. ''-tile 32'' indicates the number of images to
+put in each row.
+
+To convert a color image into a black & white bitmap at a particular threshold:
+<code>
+convert -threshold 16384 -colors 2 \
+-colorspace gray eg.png eg-25.gif 
+</code>
+
+Threshold values can be listed as numeric or percentage. PNGs seem to have
+valid values in the range 0 - 2^16. 0 = entirely white, 65536 = entirely black.
+
+NOTE: without 'colorspace gray' Non-black and non-white colours are derived from the source image.
+
+NOTE: I've found that sometimes a particular set of pixels will be white
+at a higher threshold than one at which they were previously rendered as black.
+This doesn't make sense - I suspect it's because ImageMagick uses the different
+colour channels unintelligently to determine overall value. To avoid this
+problem use a source image that's greyscale, not RGB.
+
+Then you can do fun things like this, which makes 101 frames fading from white
+to black:
+<code>
+for i in $(seq -w 0 100); \
+do convert -threshold $i -colors 2 source.png out-$i.gif; \
+done
+</code>
+
+===== Camouflage With ImageMagick =====
+
+This uses random plasma to create a basic camouflage pattern.
+<code>
+convert -size 400x400 plasma:fractal -blur 0x2  -edge 16 -fx G -colors 2 out.png
+</code>
+
+This seems to produce a larger, smoother pattern.
+
+<code>
+convert -size 400x400 plasma:fractal -blur 0x8  -edge 16 -fx G -colors 2 out.png
+</code>
+
+This produces fantastic four-colour "colourflage". It tends to have bright flecks in which probably don't make it functional camo, but look great!
+
+<code>
+convert -size 400x400 plasma:fractal -blur 0x10  -edge 16 -colors 4 out.png
+</code>
+
+You want to remake the same image? Set a random seed number:
+
+<code>
+convert -size 400x400 -seed 1 plasma:fractal -blur 0x10  -edge 16 -colors 4 out.png
+</code>
+
+The //-modulate// operator uses brightness, saturation and hue to remap colours globally:
+
+<code>
+ convert -size 400x400 -seed 1 plasma:fractal -blur 0x10  -edge 16 -colors 4 -modulate 75,75,150 out.png
+</code>
+
+The //-level// operator pulls the white value lower and the black value higher, and can control gamma, too. Not exactly sure how it works yet:
+
+<code>
+convert -size 400x400 plasma:fractal -blur 0x10  -edge 16 -colors 4 -level 30%,70%,.4 out.png
+</code>
+
+Using a preset colourmap could be the way to go for "realistic" camouflage. The US military currently specify 12 standard camouflage colours. This table was extracted from a png of those twelve colours:
+
+<code>
+convert camo_12.png -unique-colors txt:-
+
+# ImageMagick pixel enumeration: 12,1,65535,rgb
+0,0: (    0,    0,    0)  #000000000000  black
+1,0: (24415,15934,12079)  #5F5F3E3E2F2F  rgb(37.2549%,24.3137%,18.4314%)
+2,0: (14392,16962,10537)  #383842422929  rgb(21.9608%,25.8824%,16.0784%)
+3,0: (13878,23644,14135)  #36365C5C3737  rgb(21.1765%,36.0784%,21.5686%)
+4,0: (21331,18247,12079)  #535347472F2F  rgb(32.549%,27.8431%,18.4314%)
+5,0: (23644,24415,12336)  #5C5C5F5F3030  rgb(36.0784%,37.2549%,18.8235%)
+6,0: (31868,22359,15677)  #7C7C57573D3D  rgb(48.6275%,34.1176%,23.9216%)
+7,0: (34695,20046,12593)  #87874E4E3131  rgb(52.9412%,30.5882%,19.2157%)
+8,0: (47802,42148,31611)  #BABAA4A47B7B  rgb(72.9412%,64.3137%,48.2353%)
+9,0: (57825,43433,24415)  #E1E1A9A95F5F  rgb(88.2353%,66.2745%,37.2549%)
+10,0: (52685,40349,34695)  #CDCD9D9D8787  rgb(80.3922%,61.5686%,52.9412%)
+11,0: (65535,65535,65535)  #FFFFFFFFFFFF  white
+</code>
+
+Note that the two lines below produce distinctly different results.
+
+  * In the first the image is converted to six colours and then mapped against the 12 colour camo palette.
+  * In the second the image is first mapped to the 12 colour camo palette, then converted to six colours.
+
+The first is more variable - the second results are much more 'samey'. Note that the //+dither// operator suppresses dithering, giving a cleaner edge - which looks good, but doesn't produce such practically effective camouflage effects.
+<code>
+for i in $(seq 0 9); do convert -seed $i -size 400x400 plasma:fractal -blur 0x10 -edge 16 +dither -colors 6 -map camo_12.png col6_$i.png; done
+for i in $(seq 0 9); do convert -seed $i -size 400x400 plasma:fractal -blur 0x10 -edge 16 +dither -map camo_12.png -colors 6 6col_$i.png; done
+</code>
+
+My final solution using a limited palette of flat paint colours is to use the //-spread// operator to fuzz up the edges, and to use a limited palette of 6 of a possible 12 colours extracted from photos of the location in which the camouflage will be deployed.
+
+<code>
+convert location.jpg -colors 12 -unique-colors best12.png
+for i in $(seq 0 9); do convert -seed $i -size 400x400 plasma:fractal -blur 0x10 -edge 16 +dither -colors 6 -map best12.png -spread 1 spread6_1_$i.png; done
+</code>
+
+===== ImageMagick ASCIIart Camouflage =====
+
+Need to blend in with your terminal window? Of course you do!
+
+<code>
+convert -size 160x50 plasma:fractal -edge 20 -colors 96 xpm:-
+</code>
+
+In my current version of ImageMagick (Debian Squeeze) it seems that setting the ''edge'' argument low sometimes produces images with more than one character per pixel, and lines wrap annoyingly. You can avoid this by reducing the number of colours, but this produces less satisfying variability. I don't yet understand why the ''-colors 96'' argument doesn't cap the total number of colours and therefore the characters per pixel.
+
+This output to XPM (above) is a bit of a hack, though, because the mapping of ASCIIart letter to tonal value of each pixel is somewhat arbitrary. Dedicated ASCIIart converters seem to do a better job.
+
+<code>
+convert -size 160x100 plasma:fractal -edge 14 -colors 96 pbm:- | pbmtoascii
+</code>
+
+Note that to get a similarly-sized output to the previous example you'll need to double the vertical dimension - ''pbmtoascii'' seems to compress vertically.
+
+To repeat the same output use a seed. The same seed number produces the same output every time. This is a good way to check the effects of the ''-edge'' and ''-colors'' parameters.
+
+<code>
+convert -seed 1 -size 160x100 plasma:fractal -edge 14 -colors 96 pbm:- | pbmtoascii
+</code>
+
+<code>
+for i in $(seq 40); do  convert -seed 1 -size 160x110 plasma:fractal -edge $i -colors 96 pbm:- | pbmtoascii; done
+</code>
+
+===== ImageMagick ASCIIart Rorschach =====
+
+Okay, so this isn't a Rorschach image as such - it's mirrored both vertically and horizntally. However, this illustrates how ''flip'', ''flop'', ''+append'', ''-append'' work.
+
+It's also interesting to look at how this line passes output to STDOUT and accepts it from STDIN. Not sure whether pbm is the ideal format in which to do this.
+
+<code>
+convert -seed 99 -size 64x48 plasma:fractal -edge 16 -colors 40 pbm:- | convert - \( +clone -flop \) +append pbm:- | convert - \( +clone -flip \) -append pbm:- | pbmtoascii
+</code>
+
+In this example, the ''-seed'', ''-edge'' and ''-colors'' arguments are fairly arbitrary.
+
+One more thing - the slash-escaped parentheses around the ''+clone'' argument ARE important, but I'm not sure why - I think they define what ImageMagick does with the cloned image.
+===== ImageMagick Mosaic =====
+
+Problem: Take an arbitrarily-sized image (R_S_02-03.jpg), remap the palette to another palette already specified (palette3.png), chop it into nine tiles, resize them to 29x29 pixels, and save the resultant squares in .png format in a subdirectory (out_02).
+
+<code>
+convert -crop 3x3@ R_S_02-03.jpg -map palette3.png -resize 29x29 out_02/rs0201.png
+</code>
+
+If you wanted to write out as a GIF, this wouldn't work - all the created tiles would be included into the same output file as an animation. You can get around this by using ''+adjoin'' - which forces the creation of separate output files.
+===== Setting The Date =====
+<code>
+date -s 12:22
+</code>
+
+===== Hotbot Search =====
+Yes, I know it's not Linux, but...
+<code>
+http://64.78.72.17/text/default.asp
+</code>
+:?: This note predates Google, so I'm leaving it here for historical reasons - it was a way to access text-only search from [[http://hotbot.com]].
+===== USB Storage =====
+
+Attempting to connect the USB Compact Flash reader Microtech CameraMate - it reportedly uses the usb-storage module which uses the scsi_mod module to define the device:
+
+<code>
+ls
+insmod scsi_mod
+insmod usb-storage
+</code>
+
+Installing Mandrake 8.1 helps - the modules required are all installed. Still seems impossible to connect the CameraMate straightforwardly, but the SanDisk ImageMate is supported.
+
+<code>
+mkdir /mnt/cf/
+mount /dev/sda1 /mnt/cf/
+</code>
+Add the following line to /etc/fstab:
+
+<code>
+/dev/sda1 /mnt/cf auto user,iocharset=iso8859-1,umask=0,sync,exec,codepage=850,noauto 0 0
+</code>
+
+CameraMate still has problems. Tried the SanDisk ImageMate with more success. However, once modules are loaded simply mounting /dev/sda1 won't work. Instead:
+
+<code>
+insmod scsi_mod
+insmod usb-storage
+mount /dev/sda # This line makes /dev/sda1 exist!
+mount /dev/sda1 /mnt/cf
+</code>
+
+===== Floppy Disk Problems =====
+<code>
+
+# Under Mandrake8.0 non-root users often experience
+# problems with remounting floppy disks.
+# 1. Make sure that the setuid bitt is set on mount binary.
+# 2. Try the 'sync' command before changing floppies.
+# 3. Try adding 'sync' to the /dev/floppy entry in/etc/fstab
+# Suspect support is better in Mandrake8.1.
+# Don't forget to include the 'autofs' feature when installing
+
+</code>
+===== Securing Services With Hosts.Allow & Hosts.Deny =====
+<code>
+
+/etc/hosts.allow
+ALL : 192.168.1.
+# Allow all services to be accessed if you're on the LAN
+# Note: the trailing dot - all in address range 0-255!
+
+/etc/hosts.deny
+ALL : ALL
+# Allow NO services to be accessed if you're anywhere!
+# Note: hosts.allow takes priority over hosts.deny
+
+</code>
+===== Adding A New User By Telnet =====
+<code>
+telnet 192.168.1.2
+Login: yourlogin
+Password: yourpassword
+su
+Password: *********
+useradd -c 'Firstname Lastname' -g ASpace loginname -m
+# -m option makes the following unnecessary:
+    mkdir /home/loginname
+    chown loginname /home/loginname
+    chgrp ASpace /home/loginname
+# Account is now created but impossible to log onto
+passwd android
+        New User Password: ********
+        Again: ********
+/etc/nis/nis_update
+exit
+exit
+
+# Note: Must make this procedure ssh compatible!
+
+</code>
+===== html_thumbnail =====
+
+http://www.nihongo.org/snowhare/utilities/
+
+Try the following:
+
+<code>
+cp image*.jpg websitedir/gfx/
+cd websitedir
+html_thumbnail -catalogdir pre -title 'Website Title' -output index.html gfx/*
+</code>
+
+If tweaks are needed try the extensive documentation: Recommend doctoring the icon name to include a string shorter than 'indexicon'. Eg: 'icon'! Also recommend renaming image files in an intelligent fashion.
+
+Read the source...
+<code>
+less html_thumbnail
+</code>
+
+===== Renaming Multiple Files Intelligently =====
+
+<code>
+mkdir gfx
+mkdir new
+cp *.jpg gfx
+cd gfx
+let j=0; for i in `ls`; do let j++; cp $i ../new/prefix$j.jpg; done;
+</code>
+
+Renames jpegs in directory ''gfx'' to ''prefix[number].jpg'' and puts them into directory ''new''.
+
+Note:
+
+  * let j=0   Alternative: let "j = 0"
+  * let j++   Increments j by one
+
+A good way to test without doing is to bracket the ''cp'' command with double quotes and echo it.
+
+<code>
+let j=0; for i in `ls [abc]*`; do let j++; cp $i ../new/prefix$j.jpg; done;
+</code>
+
+Renames ONLY files beginning with 'a' 'b' or 'c'.
+
+===== Really Fancy Renaming! =====
+
+Works with up to 99 images in a directory
+
+Pads the one-digit numbers with a zero so they stay in order.
+
+<code>
+let j=1;
+for i in `ls *jpg`;
+ do
+  mv $i prefix`printf %2s $j | tr ' ' '0'`.jpg;
+  let j++;
+ done;
+</code>
+
+However, below is better, because the ''%2s'' (string) format pads with a space which needs to be translated, whereas the ''%02d'' (decimal number) format pads with a leading zero straight off.
+
+I'm not yet sure if ''%02d'' (decimal) is better than ''%02i'' (integer).
+
+<code>
+let j=1;
+for i in `ls *jpg`;
+ do
+  mv $i prefix`printf %02d $j`.jpg;
+  let j++;
+ done;
+</code>
+
+It's a really good idea to put ''echo'' around the ''mv'' statement to test this! Note also the way that the ''$()'' construct does the same as ''``'' - but it's clearer.
+
+<code>
+let j=1; for i in $(ls *jpg); do echo mv $i prefix$(printf %02d $j).jpg; let j++; done;
+</code>
+</code>
+
+===== Intelligent Listing =====
+
+<code>
+ls -l | grep ^d
+</code>
+
+Lists directories in the current directory only
+
+<code>
+for i in `ls -l | grep ^d | perl -pe 's/.* (.*$)/$1/'`;
+  do du -sh $i;
+done;
+</code>
+
+Lists the sizes of the directories in the current directory. This command may take some time!
+
+Note: How about something simpler like this... ?
+
+<code>
+find . -type d -exec du -sh {} \;
+</code>
+
+===== Intelligent Use Of Less For Text Viewing =====
+
+Some times it's nice not to wrap lines:
+
+''less -S'' Slices the lines at 80 characters, but you can use the arrow keys to scroll sideways.
+
+''less -R'' will try to retain colours etc. For example:
+
+<code>
+ls --colour | less -R
+</code>
+
+Try it without the ''-R'' and you'll get the idea!
+
+===== Adding Line Wrapping ====
+
+Then again, it can be nice to line-wrap output. The ''fold'' command does this nicely. (Default width -s 80 characters, -w specifies other values.)
+
+<code>
+for i in $(seq 0 999); do NN="$NN$i"; done; echo $NN | fold -w 60
+</code>
+
+
+===== Evaluating With Expr =====
+<code>
+let a=1
+let b=2
+expr $a + $b # 3
+expr length test # 4
+expr length test2 # 5
+expr index testing n # 6
+</code>
+
+===== Manipulating Bash Shell Arguments =====
+
+''$#'' = Number of arguments function is called with.
+
+''$1'' = First argument
+
+''$2'' =  Second argument
+
+''shift 3'' throws away ''$1'', ''$2'' and ''$3'' and replaces them with ''$4'', ''$5'' and ''$6''.
+
+===== Make A New Compaq BIOS Partition =====
+<code>
+dd if=/home/public/Config/Compaq/compaq.raw of=/dev/hda<n> bs=1024
+</code>
+
+Subsequently it's become clear that there are several different BIOS partitions for different Deskpro models. It is possible to install the wrong one, so watch out!
+
+===== DNS Servers =====
+
+If a client machine boots but fails to find the fileserver...
+
+  * Check ''/etc/fstab'' to make sure external mounts are present as NFS mounts.
+
+  * Check that the DNS servers are correctly specified in ''/etc/resolv.conf''. (Later note: I suspect this is no longer relevant now we share the hosts file over NIS! Now we specify 192.168.1.1 as our DNS server anyway.)
+<code>
+195.10.153.11
+195.10.254.4
+</code>
+
+  * Check ''/etc/nsswitch.conf'' and make sure that the ''passwd'', ''group'' and ''hosts'' lines include ''nis'' not just ''files'' and ''nisplus''.
+
+===== Problem With Non-Graphical Logins =====
+<code>
+
+# Don't forget- if the left "Control" key doesn't work
+# you can't switch to them!
+
+</code>
+
+===== Clearing The First 512 Bytes Of hdx1 =====
+
+:!: This will render your hard disk unbootable unless you reinstall a boot loader.
+<code>
+dd if=/dev/zero of=/dev/hdx1 bs=512 count=1
+</code>
+
+===== Padding Numbers With Leading Zeros =====
+
+There must be a better way to do this:
+<code>
+for i in `seq 10`
+        do printf %2s $i | tr ' ' '0'
+        echo
+done
+</code>
+
+(The echo's just there to add new lines!)
+
+This is better:
+<code>
+for i in `seq 10`; do printf %02d $i; echo; done
+</code>
+
+As it happens ''seq'' had its own built-in zero-padding, (''-w'' = equal __w__idth) so this is even better!
+<code>
+for i in $(seq -w 10); do echo $i; done
+</code>
+
+But there's a solution even better than that! Use the "floating point formating available within ''seq'':
+<code>
+seq -f "%04.0f" 10
+</code>
+===== Evaluating Mathematical Expressions =====
+
+Use double brakets to evaluate a maths expression
+<code>
+echo $((3 + 3))
+6
+</code>
+
+Alternatively use 'expr'
+<code>
+expr 3 + 3
+6
+</code>
+
+The spaces ARE required - so this (below) __doesn't__ work!
+<code>
+expr 3+3
+3+3
+</code>
+
+... Ooops! Also, watch out for regular expression substitution:
+
+<code>
+expr 3 * 3
+syntax error!
+</code>
+(The '*' is counted as'everything' when we meant 'multiply')
+
+<code>
+expr 3 \* 3
+9
+</code>
+Or even...
+
+<code>
+expr 3 '*' 3
+9
+</code>
+... Ahhh! That's better!
+
+
+===== Problems With Dhcp =====
+<code>
+
+# With a Mandrake 8.1 client I found that simply setting
+# the eth0 connection type to DHCP was inadequate to get
+# a connection. I also had to add a route to the gateway
+# to get the link active.
+
+ifconfig eth0 172.16.66.19
+ping 172.16.64.1
+route add default gw 172.16.64.1
+
+# In fact the problem was that there was no DHCP client
+# installed. This was solved simply with
+
+urpmi /mnt/cdrom/Mandrake/RPMS/dhcp-client-3.0-0.rc12.1mdk.i586.rpm
+
+# This installs two packages (dhcp client and dhcp common)
+# which are the latest dhcp clients. There is another, earlier
+# dhcp mplementation on Mandrake 8.1 which is NOT needed.
+
+# When a DHCP client is installed, configuration is reasonably simple.
+# Rather than using Linuxconf to change settings permanently, simply
+# type:
+
+su
+<password>
+dhclient
+
+# This should set the IP no. Gateway and DNS servers.
+# However Mandrake 9.0 requires a further step to keep postfix happy:
+
+ifconfig lo 127.0.0.1 netmask 255.255.255.255
+/etc/init.d/postfix restart
+
+</code>
+
+===== Problems With Postfix =====
+
+I just upgraded my laptop from Mandrake 8.1 to Mandrake 8.2
+for some reason the ''postfix'' mail transport agent ceased to work!
+I simply got the response 'Sending Mail Failed' from Mozilla Thunderbird,
+though ''mutt'' reported no problems, it simply didn't send.
+
+I checked postfix using
+<code>
+postfix reload
+postfix not running
+</code>
+
+Strange! ''linuxconf'' indicated it //was// running.
+<code>
+postfix check
+</code>
+...reported numerous warnings that directories within
+''/var/spool/postfix'' did NOT BELONG TO POSTFIX.
+
+I checked some more:
+
+''cat /etc/passwd | grep postfix'' returned the result...\\
+''postfix:x:35:35:Postfix User:/var/spool/postfix''
+
+<code>
+ls -al /var/spool/postfix
+</code>
+...indicated that the owner was '416'.
+
+I checked on a working Mandrake 8.1 box and found the following:
+
+''cat /etc/passwd | grep postfix''\\
+returned the result...
+''postfix:x:416:416:postfix:/var/spool/postfix''
+
+So I edited ''/etc/passwd'' so that the user number (UID) of ''postfix'' was 416. This cured the problems after a
+<code>
+postfix reload
+postfix check
+</code>
+...Silent response... Good!
+
+Perhaps it might have been better to...
+<code>
+chown 35 /var/spool/postfix/
+</code>
+...but what the hell, my fix worked.
+
+Another problem: I reinstalled again and upgraded security to
+level "Higher". ''postfix'' //doesn't// get activated on boot in that level,
+but __//there are no warnings//__ telling you that ''postfix'' isn't sending mail.
+
+So //check// that ''postfix'' is running, and use ''linuxconf'' to activate it in
+the runlevels that you need it in. Once you start ''postfix'', then all the
+messages that should have been sent are sent in one big lump (again!) with
+no report.
+
+===== Solving KDE Errors =====
+Recently I experienced nasty ''kwrite'' crashes (SIGSEGV!).
+Sometimes these crashes occured instantly when ''kwrite'' was
+invoked from menus, while sometimes they would only occur
+when trying to change ''kwrite'' settings.
+
+The errors were restricted to user 'james', and when I logged
+on as new user 'james2' then ''kwrite'' behaved normally. Root user
+was also able to operate ''kwrite'' without difficulty.
+
+  * Deduction: the problem is located in ''/home/james''
+  * Cure: identify the corrupt configuration file and repair it.
+  * Problem: hundreds of possible config files, and the culprit might be not directly associated with ''kwrite'' (eg it might be a font or window system config file).
+  * Cure: delete **all** KDE configuration files and let KDE remake them when it restarts.
+
+1. Log out of X\\
+2. Log in at the shell (Ctrl-Alt-F1)
+
+<code>
+rm -rf ~/.kde
+exit
+</code>
+
+3. Log in to X (Ctrl-Alt-F7)
+
+===== Mandrake 8.2 Issues =====
+<code>
+
+# Linuxconf reports devfsd configuration file missing.
+/etc/devsfsd.config
+# Surely they actually mean the file
+/etc/devfsd.conf
+# Try the following:
+ln -s /etc/devfsd.conf /etc/devsfsd.config
+
+# Linuxconf doesn't allow the modem to be present on ttyS4
+# Try the following:
+ln -s /dev/ttyS4 /dev/modem
+
+</code>
+===== How We Used To Install Open Office =====
+
+NOTE: This is old information showing the install process on Linux Mandrake (or another RPM based system) before 2003. Now (2011) we just install using a package manager: just select ''OpenOffice.Org'' from a menu, click INSTALL and wait 3 minutes. How things have changed!
+
+  - Download the binary from www.openoffice.org
+  - Download the Java Runtime Environment rpm.bin from Sun
+
+<code>
+su root
+chmod +x j2re-1_3_1_03-linux-i386-rpm.bin
+rpm -i j2re-1.3.1_03.linux.i386.rpm
+</code>
+
+Installs in ''/usr/java'' - easy to find, huh?
+
+<code>
+mv install641D_linux_intel.tar.gz /tmp
+cd /tmp
+tar xzvf install641D_linux_intel.tar.gz
+</code>
+
+The install instructions tell you this will make a directory called 'install', but in fact it's called 'normal'...!
+
+<code>
+cd normal
+./setup -net
+</code>
+
+That ''-net'' is very important at this stage - otherwise only root can use the installed binaries...
+
+<code>
+su user
+cd /usr/opt/oo641/
+./setup
+</code>
+
+This installs a set of prefs files in ''/home/user/oo641''. It also ceates a file ''/home/user/~.sversionrc'' which must be deleted for a reinstall...
+
+<code>
+su root
+cd /usr/opt/oo641/
+./setup -net
+</code>
+
+Allows the root user to repair, modify or delete the install.
+
+===== Debian Lenny OpenOffice.Org Java Glitch =====
+
+If you get the error message ''javaldx failed'' when running ''ooffice'' from the console, the problem is an old configuration file from an earlier version. (My $HOME has been carried over untouched from distro to distro.) The problem is solved simply:
+
+<code>
+rm $HOME/.openoffice.org2/user/config/javasettings_Linux_x86.xml
+</code>
+
+Note that even with the incorrect Java config present, it's still possible to run OpenOffice.
+
+===== Conditional Expressions In Bash Scripts =====
+The syntax is awkward: note the spaces inside the square brackets.
+<code>
+if [ -e filename ]; then echo 'filename exists!';fi;
+</code>
+This says 'filename exists!' if is does!
+<code>
+if [ ! -e filename ]; then echo "filename doesn't exist!"; fi;
+</code>
+This says 'filename doesn't exist!' if it doesn't. Note the cunning use of double quotes. However, this is more terse:
+<code>
+[ ! -e filename ] && echo "filename doesn't exist!" || echo "filename exists"
+</code>
+
+===== Listing Filenames In A Complex Directory Structure =====
+<code>
+for i in `find *`; do basename $i; done;
+</code>
+This just prints the filename - however deep the file structure
+
+<code>
+for i in `find */*`; do basename $i; done;
+</code>
+This ignores stuff in hidden directories.. but why?
+
+<code>
+for i in `find */*`; do j=`basename $i` if [ -e test/$j ];
+then echo "found $j in directory test"; fi; done;
+</code>
+Hey! this is really good!
+
+<code>
+mkdir backup
+cd backup
+for i in `find ../*/*`; do ln --backup=numbered $i; done;
+</code>
+This creates a link in the current directory which has a unique name and doesn't neglect or overwrite any found files.
+
+===== diff =====
+
+<code>
+if [ "`diff one two`" ];
+then echo "There's a difference between one and two";
+fi;
+
+if [ ! "`diff one two`" ];
+then echo "There's no difference between one and two";
+fi;
+</code>
+
+===== Differences Between Files: Finding Duplicates =====
+''diff'' is all very well for text files, but for binaries use ''cmp''.
+<code>
+cmp file1 file2
+</code>
+Outputs nothing if the files are the same - complains if they're different. Also complains if one or more files is a directory.
+<code>
+cmp file1 file2 &>/dev/null && echo same || echo different
+</code>
+This echoes "same" if the two files are real files and they're the same. Otherwise (if there's an error, or the files are different) it echoes "different".
+
+<code>
+##### GPL solution by Chris F.A. Johnson
+cd ../INBOUND
+stat -c "%s %n" * |
+   while read size file
+      do
+           if [ -f "../ARCHIVE/$file" ]
+        then
+         eval afilesize=\$size_${file// /_}
+          if [ $afilesize = $size ]
+           then
+                diff "$file" "../ARCHIVE/$file" > /dev/null && rm -v $file
+         else
+              echo "not removed: $file"
+               fi
+            fi
+       done
+#####
+</code>
+
+===== Pulling Individual Columns Out Of Text Files With Perl =====
+<code>
+
+# try this type of pattern:
+
+cat eg.txt | perl -pe 's/(\S*)(\s*)(\S*)/1>$1<1 2>$2<2 3>$3<3\n/'
+
+# \S is non-whitespace
+# \s is whitespace
+# $1 is the first bracketed pattern
+# $2 is the second bracketed pattern
+# $3 is the third bracketed pattern
+</code>
+
+===== Raid (Disk Mirroring) On Mandrake 8.1 =====
+
+The only problem is understanding the way that the GUI operates.
+First, install two disks for use as RAID devices.
+Partition them both the same. Make the devices thus:
+
+<code>
+/dev/sda5               /                               ext3
+/dev/sda6               swap            swap
+/dev/sda7               /usr            ext3
+/dev/sda2               RAID device = md0                       (We're intending this to be /var)
+/dev/sda3               RAID device = md1                       (We're intending this to be /home)
+
+/dev/sdb5               /mnt/sda5                               ext3
+/dev/sdb6               swap            swap
+/dev/sdb7               /mnt/sda7               ext3
+/dev/sdb2               RAID device = md0
+/dev/sdb3               RAID device = md1
+</code>
+
+At this stage a new "device" called RAID will have "appeared"
+in the dialogue boxes. You Should treat this as a new "disk"
+and assign the appropriate filesystems and mount points:
+
+<code>
+md0             /var            ext3
+md1             /home           ext3
+</code>
+
+Now you should be done. Somehow, the size of sda2 and sdb2 have
+NOT been added together - rather, md0 is the same size as each
+of them, NOT both of them.
+
+===== Beeping =====
+
+<code>
+for i in `seq 6`; do echo -ne '\a'; sleep 1s; done;
+</code>
+
+A pretty good imitation of the time pips!
+
+
+===== ASCII Values =====
+
+<code>
+man ascii
+</code>
+
+===== Fast Random Numbers For The Shell =====
+
+Generate a number 0-99. Do it with Perl...
+<code>
+perl -e 'print int(rand 100)."\n";'
+46
+</code>
+That's heavy and inelegant, because you're needing to use another command interpreter. Unless you're using Perl anyway why not try this?
+
+<code>
+echo $((100 * $RANDOM / 32768))
+11
+</code>
+
+Hmmm... Does that work mathematically? No! Use the modulus operator instead - this is much better:
+<code>
+nn=$RANDOM; let "nn %= 100"; echo $nn
+30
+</code>
+
+Is $RANDOM random enough? How about just using...
+<code>
+date +%N
+</code>
+Which outputs the number of nanoseconds (that's 000000000 to 999999999) from whenever it's called. Thus 00-99 is...
+<code>
+rand=$(date +%N) ; echo ${rand:7:2}
+</code>
+
+**WARNING!** This (above) won't work if you want to use the modulus operator - because sometimes a $(date +%N) result begins with a '0' or a '00'. This makes the bash interpreter think that the number is octal and you get an error.
+
+**Therefore** should you strip off leading zeros? This is easily achievable with ''sed'' or ''awk'', but can you achieve it with ''bash'' syntax alone?
+
+<code>
+rand=$(date +%N); rand=${rand:6:3}; rand=${rand#0?}
+</code>
+
+**No!** This __doesn't__ work every time because the expression ''rand#0?'' strips off one zero plus one of any other character. This shows an instance where pattern-matching is subtley different in ''bash'' (where ''?'' = any character) and ''awk'' (where ''?'' = one of the previous expression (directly to the left.)
+
+Introducing a **neat but nasty kludge**, you could just add a '1' to the left of ''$rand'' - which is okay as long as all you need is arbitrariness, and adding the ''1'' does not reduce variability. If this worked, an arbitrarily-sized (0-6) pseudo random number can be generated thus...
+
+<code>
+rand=1$(date +%N); let "rand %= 7"; echo $rand
+</code>
+
+By adding one to the result, the output simulates the mysterious seven-sided die!
+
+<code>
+rand=1$(date +%N); let "rand %= 7"; rand=$((rand+1)); echo $rand
+</code>
+
+Here's another solution, using /dev/urandom as a source of randomness, then using ''tr'' to filter out numerals one to seven. Which one is found first?
+
+<code>
+</dev/urandom tr -cd 1-7 | head -c1
+</code>
+===== Forcing Base Ten Interpretation =====
+
+Okay, so that kludge to make bash understand that a number is base ten, simply by concatenating a possibly zero-padded number with '1' is neat, but nasty! While it works simply and fast, it means you're introducing a non-arbitrary, non informative numeral into the process, which might matter!
+
+What's the //proper// way to ensure that bash interprets a base ten zero-padded number as base ten, not octal? Evaluate the number and prefix it with 10# thus...
+
+<code>
+rand=$(( 10#$(date +%N) ))
+</code>
+
+===== Pseudo-Random Hexadecimal Filenames =====
+
+Want to rename huge numbers of .tmp files so that their name order is scrambled in an arbitrary but seemingly meaningful, structured fashion? How about this?
+
+<code>
+for i in *.tmp; do nn=$(md5sum <<<$(date +%N)); mv --backup $i ${nn:0:8}.tmp; done
+</code>
+
+===== Random Printable Characters =====
+This handy little one-liner prints out 2000 random printable characters in 25 lines of 80 characters...
+<code>
+perl -e 'for(1..25){for(1..80){print chr(32+rand 95)}print"\n"}'
+</code>
+In this form it could be used as a secure password generator making a password between 8 and 10 characters long, surrounded by double-quotes.
+<code>
+perl -e 'print"\"";for(1..(8+rand 3)){print chr(32+rand 95)}print"\"\n"'
+</code>
+You can even get away with this!
+<code>
+perl -e 'print"\"";for(1..8+rand 3){print chr(32+rand 95)}print"\"\n"'
+</code>
+
+===== Using gawk To Pull Slices And Columns From Text Files =====
+
+''gawk'' is GNU ''awk'' - so *nix machines may run awk instead.
+
+<code>
+gawk '{print $2; print $1}' file.txt
+</code>
+
+Prints column 2 then column 1 out of a text file with columns
+separarated by whitespace.
+
+<code>
+gawk -F: '$3 > 500 {print $1}'
+</code>
+
+Prints all 'real' users who have been added to the system.
+Field separator = ':'. Third field ($3) is UID number.
+
+
+===== Gawk Pattern Match =====
+
+Find and move all of the hidden files in a directory,
+but NOT the directory itself (.) or the parent directory (..).
+This pattern finds anything that starts with a dot followed
+by an alphanumeric character:
+
+<code>
+for i in $(ls -a | gawk '/^\.[[:alnum:]]/');
+do mv $i hidden_files/;
+done;
+</code>
+
+
+===== Getting Cleverer with ''gawk'' =====
+<code>
+apm -m | gawk 'BEGIN { RS="(" } /min/ { print $1 }'
+</code>
+
+Just print the number of minutes of battery life left.
+By default the Record Separator (RS) is a linefeed.
+
+<code>
+cat -n test.txt | gawk '{ print strftime("%H:%m ") $0 }'
+06:03      1    test1
+06:03      2    test2
+06:03      3    test3
+</code>
+Prefix each line of output with a timestamp. I particularly like this in combination with an ''rhwo -a'' cron job - because rwho output is much less useful if you don't know the time that it was called.
+
+Sometimes you may want to set the field separator to the TAB character. To do this use single quotes:
+<code>
+cat some_tab-separated_data.txt | gawk -F't' '{print $2 " " $1}'
+</code>
+
+===== ''gawk'' Filtering Non-blank Lines =====
+
+<code>
+cat eg.txt | gawk 'BEGIN{RS=""} {print}' | sort | uniq
+</code>
+
+In an unordered file with multiple lines, some blank lines, and multiple instances of the same line, this extracts one instance of each non-blank line in alphabetical order.
+
+===== Using ''gawk'' to Word-Count a List ====
+
+The word list (in this case ''pv2.txt'') was created from raw text input (''pv.txt'')thus:
+
+<code>
+cat pv.txt | tr "A-Z" "a-z" | tr -c "[:alnum:]'" " " |\
+tr " " "\n" | tr "\'" "," | sort -r > pv2.txt
+</code>
+
+The final list is all lowercase, one word per line, stripped of non-alphanumerics except for apostrophes, which are substituted with a more harmless comma.
+
+<code>
+while read W; do echo -n "$W "; cat pv2.txt |\
+gawk "/^$W$/ {COUNT=COUNT+1} END{print "COUNT"}"; done < pv2.txt |\
+uniq | gawk '{print $2" "$1}' sort -n > pv2ss.txt
+</code>
+
+This code then reads line by line - and can be neater!
+
+However, this gawk script (below) is //much// nicer. The messy operations which I hacked with ''tr'' are all handled inside ''gawk''. The clever bit is the incrementation of the multi-key array ''freq[]''. Every word in the input text becomes a key, and each time the script encounters that word, then the key named that word is incremented by one. Simple!
+
+<code>
+#!/usr/bin/gawk -f
+{
+    $0 = tolower($0)
+    gsub(/[^[:alnum:]\'\-[:blank:]]/, " ", $0) 
+    for (i = 1; i <= NF; i++) freq[$i]++ # Add one to array key freq[word]
+}
+END {
+    for (word in freq) printf "%s:%d\n", word, freq[word]
+}
+</code>
+
+This can be ordered into a Wordle-friendly output from bash thus:
+<code>
+./wordfreq.awk pv.txt | sort -n -t: -k2
+</code>
+(That's a numeric sort on key 2, with a field separator of '':'' not ''" "''.)
+
+===== Reversing Strings =====
+
+The shell command ''rev'' makes this easy!
+
+<code>
+echo "hello" | rev
+olleh
+</code>
+
+Also try ''cat /etc/passwd | rev''.
+
+More complex, but better if you don't have ''rev'' available is trusty ''gawk'':
+
+<code>
+echo "hello" | gawk 'BEGIN{FS=""}{for(i=NF;i>0;i--)print $i}'
+</code>
+
+However, while this works on a single line of input, it isn't perfect on multi-line files, where it loses end-of-lines.
+===== Setting Console Colours =====
+
+Text can appear in several colours using ''echo -e''. The colours are set with the following codes:
+
+<code>
+echo -e '\e[31m'
+</code>
+Red text, black ground
+<code>
+echo -e '\x1b[31m'
+</code>
+Exactly the same! ('Escape' is hex value 1b)
+
+31=red 32=green 33=brown 34=blue 35=magenta 36=cyan 37=white
+Set a random text colour thus!
+<code>
+perl -e 'my $i=31+int(rand 7);print("\e[$i"."m")'
+</code>
+Note the '.' concatenation operator - for some reason
+it seems to be necessary.
+
+===== Random Coloured Random Text =====
+
+A pretty hardcore one-liner!
+
+<code>
+perl -e 'for(1..25){for(1..80){my $i=31+int(rand 7); \
+print("\e[$i"."m");print chr(32+rand 95)}print("\n")}'
+</code>
+
+===== Mandrake Network Install =====
+
+<code>
+Boot from install CD2.
+</code>
+
+===== Pattern Matching =====
+
+<code>
+[!s]*
+</code>
+Everything except stuff that begins with 's'.
+
+===== Installing A YP/NIS Server =====
+
+Note that YP and NIS are the same thing. NIS is the new name after British Telecom pointed out to Sun that they owned the copyright on the term "Yellow Pages"!
+
+<code>
+vi /var/yp/Makefile
+</code>
+
+Make sure that: ''MINGID=100''.
+
+Edit the 'Maps' section to include the maps that you want to serve out. I like ''passwd'', ''groups'' and ''hosts''.
+
+<code>
+cd /usr/lib/yp/
+domainname fudge
+</code>
+
+You must set the NIS domain name. Check it:
+
+<code>
+$ domainname
+fudge
+</code>
+
+Edit the ypinit script ''vi ypinit'' as follows:
+
+<code>
+HOST="192.168.1.2"
+DOMAIN="fudge"# 
+MASTER="192.168.1.2"
+</code>
+
+<code>
+ypinit -m
+</code>
+
+This initialises the NIS database and makes ''/var/yp/fudge'' and ''/var/yp/fudge/*''
+
+-m is for a master server.
+
+ypinit is a wrapper for makedbm (I think)
+
+<code>
+/etc/init.d/ypserv restart
+</code>
+
+Note that now I've written a tiny from end to ''ypinit -m'' called ''ypremake'' which is non-interactive - it just makes a master NIS server with no slave servers. Now it's possible to simply ''sudo ypremake'' if you're part of ''admingroup''. No need to restart ''ypserv''.
+
+===== Adding A New User To The New Server =====
+
+<code>
+useradd -c 'Example User' -g xgrp -m example
+passwd example
+/usr/lib/yp/pwupdate
+</code>
+
+===== Changing Your YP Password From a Client =====
+
+<code>
+
+yppasswd
+
+# The NIS Maps update themselves automatically!
+
+</code>
+===== Sorting Out Mandrake Security For A Fileserver =====
+
+At Access Space our fileserver is set to Mandriva Security level 4. (High, but not paranoid).
+
+If you want to implement a shared directory in ''/home'', it's insufficient to simply change its permissions - you also need to edit ''/usr/share/msec/perm.4'' so that the permissions are not changed back to the most restrictive possible. By default in security level 4 msec changes home directories to 700. I add separate lines in ''/usr/share/msec/perm.4'' for each shared directory, making exceptions to the usual rule.
+
+I also add entires to the root crontab with ''cron -e'' that find all files in the shared directory (hourly) and chown them to the group that the shared directory belongs to. Eg:
+
+<code>
+find /home/public -t f -exec chown :spacers {} \;
+</code>
+
+===== Ethernet Cables =====
+
+Although you can get away with simply cabling the two ends in the same, arbitrary way, it's better (you get a faster, more reliable link) if you make sure that the four twisted pairs intertwine in such a way that they buffer interference.
+
+Number = position from left on flat side of cable end.
+
+^ ^Normal Cable^Crossover (one end like this)^
+|1 |White & Orange  |(White & Green)  |
+|2 |Orange          |(Green)          |
+|3 |White & Green   |(White & Orange) |
+|4 |Blue            |(White & Brown)  |
+|5 |White & Blue    |(Brown)          |
+|6 |Green           |(Orange)         |
+|7 |White & Brown   |(Blue)           |
+|8 |Brown           |(White & Blue)   |
+
+
+===== Sound Problems Solved =====
+
+Sometimes Linux refusses to recongnise old sound cards. In that case
+simply type ''sndconfig'' as root and wait. The utility looks as if
+it's crashed - on a P75 it will take several minutes to do anything.
+Relax. It should come up with a 'curses' text menu which allows the
+sound card to be specified. I chose the nearset driver (ESSnnnn) to
+the chipset of my laptop and altered the DMA setting from 0 to 1 to
+make it work.
+
+Sometimes on new (2006) distros the sound card works when it's set up,
+but ceases to work later. This is because ''udev'' (a system for
+creating and destroying device files dynamically) mistakenly removes the
+sound module from the running system when the sound card is deactivated.
+Because the module is not present on boot, then the sound card is not
+recognised and the relevant device files (eg: ''/dev/dsp'') are not made.
+
+Solution: manually edit ''/etc/modules'' and add a line to insert the
+relevant sound module at boot.
+
+===== Backups With Tar =====
+<code>
+
+cd source
+tar cf - * | (cd /target ; tar xvf -)
+
+# tar copies device files and symlinks intelligently.
+
+</code>
+===== Duplicating Onto 3 Disks With Dd =====
+<code>
+
+dd if=/dev/hda of=/dev/hdb bs=1048576 && \
+dd if=/dev/hda of=/dev/hdc bs=1048576 && \
+dd if=/dev/hda of=/dev/hdd bs=1048576
+
+Try also cp -a:
+
+# Set source & target drives as slaves
+# hda = bootable h/d, hdc = cdrom
+
+mkdir /target
+mkdir /source
+mount /dev/hdb1 /source
+mount /dev/hdd1 /target
+mkdir /target/proc/
+cp -av /source/[^p]* /target/
+
+# This should copy everything except the contents of /source/p* [i.e. proc]
+# With this system it is possible to use hda1 as the source.
+# The -a is very important because otherwise the files /dev/* will recurse.
+
+</code>
+
+===== Different Bases =====
+<code>
+echo $((16#FF))
+255
+</code>
+
+What is the decimal of FF in base 16?
+
+<code>
+printf %x\\n $((10#1000))
+3e8
+</code>
+
+What is the hexadecimal of 1000 in base 10?
+
+===== Fun with printf =====
+<code>
+for i in $(seq 32 127);do printf "\x$(printf "%x" "$i") ";done; echo
+</code>
+Prints out the whole of the printable low-ASCII character table, whitespaced. The final ''echo'' is really superfluous - but it returns the cursor to the left.
+
+
+<code>
+r(){ r=1$(date +%N);let "r %= 95";r=$((r+32));printf "\x$(printf "%x" "$r")";};for i in $(seq 140);do r;done
+</code>
+
+
+
+<code>
+r(){ r=1$(date +%N);let "r %= 95";r=$((r+32));printf "\x$(printf "%x" "$r")";};for j in $(seq 8);do for i in $(seq 16);do r;done;echo;done
+</code>
+
+<code>
+cd /tmp;r(){ r=1`date +%N`;let "r %= 94";r=$((r+33));printf "\x`printf %x $r`">>R;};for i in `seq 120`;do r;done;cat R|ttytter;rm R;cd -
+</code>
+
+===== Printing Out Binary Numbers And Numbers Of Whatever Base =====
+
+It's easy to print out numbers in bases 8, 10 and 16.
+
+<code>
+printf "%04x\n" 28
+001c
+printf "%04X\n" 28
+001C
+printf "%03d\n" 28
+028
+printf "%03o\n" 28
+034
+</code>
+
+But how about printing out in binary, or trinary? Or any base? Install the arbitrary precision maths langauge '''bc'''.
+<code>
+for i in $(seq 0 15); do printf "%05i\n" $(echo "obase=2;$i"|bc); done;
+</code>
+obase= the output base of the printed number.
+
+This one-liner prints out the numbers 0 to 15 in different bases. The numbers are represented in rows. Each column is a different base, from 2 to 16.
+<code>
+for i in $(seq 0 15); do for j in $(seq 2 16); \
+do printf %4s "$(echo "obase=$j;$i"|bc)"; done; echo; done;
+</code>
+
+
+===== cdrecord =====
+<code>
+
+cdrecord -scanbus
+cdrecord dev=0,3,0 example.iso
+
+</code>
+
+===== /etc/sudoers =====
+
+Even though the SUID bit allows a user to execute with permissions
+of the executable's owner, it doesn't actually change the user ID
+of the executing file. To do this you need to use ''sudo''. (Unless
+you're happy for users to 'su' to root -  which means they have the
+ability to screw up the system completely).
+
+<code>
+visudo
+</code>
+
+''/etc/sudoers'' is a very sensitive file, and getting it wrong might completely obliterate security, or make all ''su''-ing impossible (which completely locks up some systems) - so ''visudo'' calls ''vi'' in a syntax-checking mode so that it will only write a new version of the file that is syntactically correct.
+
+<code>
+Host_Alias LOCALHOST = localhost, full.host.name
+User_Alias ADMINS = trusteduser1, trusteduser2 ...
+Cmnd_Alias ADMINCOMMANDS = /sbin/reboot, /sbin/adduser ...
+ADMINS LOCALOST = ADMINCOMMANDS
+</code>
+
+These lines will allow trusteduser1 and trusteduser2 to execute
+''/sbin/reboot'' and ''/sbin/adduser'' as if they are root user, as long
+as they are logged into the machine in question.
+
+===== Discovering Information About The System =====
+<code>
+
+uname -a
+
+# Prints lots of version and O/S information
+# To reduce the output use specific flags (uname --help for more)
+
+</code>
+===== Checking What Services Are Running =====
+<code>
+
+chkconfig
+
+# man chkconfig to find out how to set services in different runlevels.
+
+</code>
+
+===== Backing Up With Rsync & Crontab =====
+<code>
+
+crontab -e
+
+# ... edits the crontab file /etc/crontab
+
+00 00 * * * rsync -NN /home/ /home2
+
+# Back up everything in the /home directory to /home2
+# at zero minutes past midnight every day of the month
+# every month and every day of the week.
+
+# NOTE Check whether /home/* should be specified!
+# NOTE Check args for rsync
+
+# On idris /home is too full - if you simply run...
+
+rsync /home/* /mnt/backup/
+
+# ...then rsync runs out of steam. (Too many items on the
+# command line?) Therefore I run a script which generates one rsync line
+# for each subdirectory of /home...
+
+#!/bin/bash
+echo "#!/bin/bash" > /var/local/backup/rsync.list
+for i in $( ls -d /home/*)
+do
+echo "rsync -avz --delete --force $i /mnt/backup/" >> /var/local/backup/rsync.list
+done
+
+# So a typical line of the resultant temporary shell script is...
+
+rsync -avz --delete --force /home/username /mnt/backup/
+
+</code>
+
+===== Synchronising Clocks In A Lab =====
+<code>
+
+# Examples of commands to determine the time
+clock
+
+Sat 10 Apr 2004 10:16:00 AM EDT -0.125188 seconds
+
+# What timezone is set right now?
+# The point here is that /etc/localtime is simply
+# a copy of one or more executable files in /usr/share/zoneinfo
+
+lt=$(md5sum /etc/localtime); \
+for i in $(find /usr/share/zoneinfo/); \
+do md5sum $i 2>/dev/null | grep $lt - ; done;
+
+# Set a new timezone by copying the timezone file to /etc/localtime
+
+cp /etc/localtime /etc/localtime-orig
+cp /usr/share/zoneinfo/Americas/Chicago /etc/localtime
+
+# Sync time every 30 minutes...
+
+crontab -e
+
+0,30 * * * * /usr/bin/rdate -s time.nist.gov >/dev/null 2>&1
+1,31 * * * * /sbin/hwclock --systohc >/dev/null 2>&1
+
+</code>
+
+===== Howto Modify UIDs In a Shared Directory =====
+
+Recently I've had a problem with changing UID numbers - I added 5000 to all existing UIDs and 1000 to existing GIDs to accomodate different distros, some of which are starting to use high ID numbers for system activity. Unfortunately, while usermod changes ownership of files in people's home directories, it blows it with stuff stored in ''/home/public''
+
+This one-liner sorted us out:
+
+<code>
+for j in $(seq 500 900); do find "." -uid $j -exec chown $(( $j + 5000 )) {} \; ; done;
+</code>
+
+===== Using mjpegtools To Make A Video From Frames =====
+  1. Make a yuv stream
+<code>
+jpeg2yuv -f 25 -I p -j image%05d.jpg > result.yuv
+</code>
+  2. Make an MPEG movie
+<code>
+jpeg2yuv -f 25 -I p -j image%05d.jpg | mpeg2enc -o mpegfile.m1v
+</code>
+
+Check out this for more.
+<code>
+https://sourceforge.net/docman/displamencoder video.yuv -ovc lavc -o video.m2vy_doc.php?docid=3456&group_id=5776#ss4.1
+</code>
+:!: Argh! Bitrot!
+
+In practice I've found mpeg2enc fails with an unhelpful "illegal instruction"
+message. Instead I've gone ahead and made the yuv, and then converted it using
+''mencoder''.
+<code>
+mencoder video.yuv -ovc lavc -o video.m2v
+</code>
+
+Unfortunately, at this stage I //think// that the object I've just made is NOT
+an MPEG2, but an AVI. Not sure what this means yet.
+
+===== Setting Up Disk Quotas =====
+<code>
+# Some people suggest this...
+
+# Make sure quotad is installed. As root...
+
+touch /mnt/filesystem_with_quota/aquota.user
+touch /mnt/filesystem_with_quota/aquota.group
+chmod 600 /mnt/filesystem_with_quota/aquota.user
+chmod 600 /mnt/filesystem_with_quota/aquota.group
+
+# If you're using a late version of Linux (after kernel 2.2)
+# then you ARE using quota v2. In version 1 you leave off the 'a's.
+
+# Personally, I think this is better...
+
+quotacheck -v /mnt/filesystem_with_quota/
+
+# This makes appropriate aquota.user and aquota.group files
+# In the first instance, you have to "repair" the zero-byte files
+# that you've just made with quotacheck anyway!
+
+vi /etc/fstab
+
+# Insert the options 'usrquota,grpquota' against the filesystems you want
+# to set quotas on.
+
+mount -o remount /mnt/filesystem_with_quota
+
+# Check /etc/mtab to see if it's worked!
+
+# Quotas mean nothing until quotachk is run. This is when the filesystem
+# rewrites aquota.user and aquota.group to catch up with quota sinners.
+# Therefore a cron job should be run to do this...
+
+#!/bin/bash
+/sbin/quotacheck -vguma
+
+# See also...
+
+edquota
+quotactl
+repquota
+</code>
+
+
+===== Adding New Mail Users Old-Style =====
+
+<code>
+# You have to be root to play this game...
+
+vi /etc/postfix/virtual
+
+# Add lines for the new users, and redirects to new mailboxes if required.
+
+postmap virtual
+
+# This regenerates the postfix database, virtual.db, from the file 'virtual'.
+# For completeness, I also edit the duplicate file...
+
+vi /etc/postfix/virtual_domains/exampledomain.org
+
+# ... but I don't this that's totally necessary. I suspect, though, that
+# the server setup we're using may create 'virtual' by concatenating
+# virtual_domains/*
+
+vi access
+postmap access
+
+# This regenerates access.db - which seems to be a
+# list of users that are allowed to send/receive mail via this host.
+# It may be that if a user doesn't use the host to SEND mail, then
+# this is irrelevant - but I do it for completeness.
+
+# Next up, we need to make mail directories for the new mail user.
+
+cd /home/domaingroup/exampledomain.org/system/mail/users
+mkdir exampleuser
+cd exampleuser/
+maildirmake Maildir
+chown -R exampledomain:domaingroup Maildir/
+
+# That's made the directories cur/, new/ and tmp/ that will hold the mail.
+
+# Now we must allow the new mail user to log in to collect mail,
+# but without adding them to /etc/passwd.
+
+cd /etc/userdb/
+vi exampledomain.org
+
+# Add a new line to the file which relates to a new user. This new user
+# will not be able to log in on their own behalf (I think) but will
+# be able to collect mail with the permissions of a real user (i.e. one
+# listed in in /etc/passwd).
+
+# For help with the format of each line try...
+
+man makeuserdb
+
+# In vi this will help to generate a hashed password which
+# is the last field on each line...
+:r !openssl passwd -1 SECRETPASS
+
+# Finally, we need to rebuild the mail database...
+
+cd /etc
+cp userdb.dat userdb.dat-backup
+cp userdbshadow.dat userdbshadow.dat-backup
+
+# Better safe than sorry!
+# Now this remakes the userdb.dat
+
+makeuserdb
+
+</code>
+
+===== Renaming To Upper/Lowercase =====
+
+<code>
+#!/bin/bash
+# 
+# Shell script to rename given file names to from uppercase to 
+# lowercase OR lowercase to uppercase
+# Copyright (C) 2005 nixCraft project.
+# This script licensed under GNU GPL version 2.0 or above
+# Support/FeedBack/comment :  http://cyberciti.biz/fb/
+# -------------------------------------------------------------------
+# To rename file uppercase to lowercase create sym link:
+# ln -s /path/2upper /path/2lower
+# -------------------------------------------------------------------------
+# This script is part of nixCraft shell script collection (NSSC)
+# Visit http://bash.cyberciti.biz/ for more information.
+# -------------------------------------------------------------------------
+
+FILES="$1"
+ME="$(basename $0)"
+
+# function to display message and exit with given exit code
+function die(){
+  echo -e "$1"
+  exit $2
+}
+
+# exit if no command line argument given
+[ "$FILES" == "" ] && die "Syntax: $ME {file-name}\nExamples:\n $ME xyz\n $ME \"*.jpg\"" 1 || :
+# scan for all input file
+for i in $FILES
+do
+   # see if upper to lower OR lower to upper by command name
+   [ "$ME" == "2upper" ] && N="$(echo "$i" | tr [a-z] [A-Z])" ||  N="$(echo "$i" | tr [A-Z] [a-z])"
+   # if source and dest file not the same then rename it  
+   [ "$i" != "$N" ] &&  mv "$i" "$N" || :
+done
+</code>
+
+The script above is okay, but it doesn't do recursion. At first I thought I could do it like this:
+
+<code>
+IFS="\n"; for i in $(find . | sort -r); do mv $i $(tr A-Z a-z <<<$i); done; unset IFS
+</code>
+
+... however filenames and directory names with spaces in cause havoc, and anything nested fails.
+
+Here's another script that promises to do the job better...
+
+<code>
+rename_recursive()
+{
+   for file in "$1"/*; do
+      if [ -d "$file" ]; then
+         rename_recursive "$file"
+      else
+         dirname=`dirname "$file"`
+         basename=`basename "$file"`
+         newfile="$dirname/`echo $basename | tr A-Z a-z`"
+         if [[ "$file" != "$newfile" && ! -f "$newfile" ]]; then
+            echo "Renaming '$file' to '$newfile'..."
+            mv "$file" "$newfile"
+         fi
+      fi  
+   done
+}
+
+for dir in $@; do
+   rename_recursive "$PWD/$dir"
+done
+
+</code>
+
+===== More File Renaming From The Command Line =====
+
+I've yet to test this way to squash whitespace in filenames...
+<code>
+for i in *; do n=$(echo $i | tr -d " "); mv "$i" "$n"; done
+</code>
+
+
+===== 'rwhod' on Mandrake/Mandriva Issues =====
+
+We decided to use ''rwhod'' as part of Access Space's network monitoring activity. Unfortunately, it's not installed on many of the clients, and we need to make a new user to get it going.
+
+Is rwhod installed?
+
+<code>
+chkconfig --list | grep rwhod
+</code>
+
+If not, we need to ''urpmi rwho''. Note: ''rwho'' **not** ''rwhod''. To get a recent version (the current is 1.17) you may need to ''urpmi.update -a'' If you still can't find it, check the sources.
+
+Does it work?
+
+<code>
+service rwhod status
+</code>
+
+If not (''rwhod dead but subsys locked'') this is probably because there isn't a local user called ''rwhod''. Check:
+
+<code>
+grep rwhod /etc/passwd
+</code>
+
+If there isn't, then one needs to be made. It should have a UID and GID that are //lower than 500// and the next one up from other users commented as "system user for such-and-such".
+
+<code>
+grep d /etc/passwd
+</code>
+
+On my system the highest-numbered local user (other than ''nobody'') is ''gdm'' with UID 75. Therefore "rwhod" will have a UID of 76. A Mandriva box should make a group with the same UID and puts rwhod into it. In other distros all system users may be in a "system" group - in which case add a ''-g systemgroup'' switch.
+
+<code>
+useradd -c "system user for rwhod" -u 76 -d "/var/spool/rwho" -M -s "/bin/false" rwhod''
+</code>
+
+Now rwhod should start up and run no problem. But it's best to check!
+
+<code>
+service rwhod start
+service rhwod status
+</code>
+
+Recently I've found that ''rwho'' works on Mandrake 9.1 (kernel 2.4) but NOT on Mandriva 2006. On earlier versions the daemon runs as root and doesn't need its own user... but it works! On later versions the passive mode: ''rwhod'' works (i.e. It'll report to other machines who's logged in) but the active mode of ''rwho'' (i.e. quizzing other machines as to who's logged in) doesn't. I'm still looking into this.
+
+===== Detecting Hardware Devices =====
+This command line could be useful for determining video cards and sound cards.
+<code>
+lspci -v
+</code>
+
+===== Logging Search Terms with Squid =====
+In a community public space it's not okay for people to have inappropriate images on their screen. Content blocking is either ineffective, or it blocks legitimate content. In my opinion the best methodology is to explain to everyone that it's up to them to behave responsibly online. However, how can you check whether people are being responsible if an issue is reported? There's the excuse "I wasn't searching for this - it just popped up!" - but not if you log search terms. 
+<code>
+vi /etc/squid/squid.conf
+strip_query_terms off
+</code>
+My personal ethics suggest not examining logs unless an incident is reported - I feel it's out of order to scope people's net usage unless there seems to be an issue.
+
+
+
+
+
+
+
+===== Making a Hexagon Grid With Bash =====
+Why would you want to make a grid of hexagons? Well, I guess it doesn't matter - the point is, they are centred on a grid of offset rectangles set out in the ratio 9:√27. Here's one line of bash which sets up the grid points:
+<code>
+rt27=$(echo "scale=6; sqrt(27)" | bc); \
+for i in $(seq 29); do for j in $(seq 9 9 261); do echo -n "$j " >> out.txt \
+&& echo "$rt27*$i" | bc >> out.txt; done; done;
+</code>
+Every other line of this file will locate one tessellated hexagon. Note that by making an odd number of iterations (29) you can remove the second, fourth, sixth and so on from the first, and odd numbered lines, and the first, third, fifth and so on from the second, and even numbered lines simply by removing every other line of ''out.txt''.
+
+===== Snooping Inside Binaries =====
+Sometimes it's handy to see what ASCII strings are buried inside a library or a compiled binary:
+<code>
+strings binarytosnoop | less
+</code>
+It may also be handy to view the symbols inside a binary:
+<code>
+nm binarytosnoop | less
+</code>
+
+
+
+===== Using Grub to Make a Multi-Boot Workstation =====
+I've been trying to make a workstation that'll run multiple Linux distros, so that I can test and configure a new one BEFORE switching to it. Sounds simple if you have a fileserver! The catch is getting grub configured right.
+
+For this game I've used a single 6gB partition for each Linux distro. (Separate ''/boot'' partition? No, thanks! If you did this, and all distros shared the same ''/boot'', then each install would tend to overwrite the others' boot files.)
+
+  * The important file to configure grub is ''/boot/grub/menu.lst''.
+  * Mandriva uses a shell-script called ''/boot/grub/install.sh''. Ignore this.
+  * Fedora uses ''/etc/grub.conf''. Ignore this.
+  * Ignore graphical grub installers - they'll only work for the distro you're on now - not the other distros you want to boot.
+  * Here's the process:
+    - Edit ''menu.lst'' so that it has appropriate entries for each distro.
+    - Run ''grub-install'' to install the boot-block.
+    - Reboot.
+
+<code>
+timeout 10
+color black/cyan yellow/cyan
+default 0
+
+title Mandriva 2008
+kernel (hd0,1)/boot/vmlinuz BOOT_IMAGE=linux root=/dev/hda2 resume=/dev/hda3
+initrd (hd0,1)/boot/initrd.img
+
+title Fedora Core 8
+root (hd0,0)
+kernel /boot/vmlinuz ro root=LABEL=/1 rhgb quiet
+initrd /boot/initrd.img
+
+title failsafe
+kernel (hd0,1)/boot/vmlinuz BOOT_IMAGE=failsafe root=/dev/hda2  failsafe
+initrd (hd0,1)/boot/initrd.img
+</code>
+
+Note the different entry types for Mandriva and Fedora. Fedora only recognises ''root=LABEL=/1'' whereas the (older) Mandriva kernel recognises ''root=/dev/hda2''. I think this is connected with the fact that Fedora recognises ''/dev/hda2'' as ''/dev/sda2'' - in fact, it uses the ''sdXX'' (SCSI) terminology for all mounted devices.
+
+The best place to find exactly the format you need is to look in the ''menu.lst'' files of the installs you want to boot. Copy them across wholesale - even if the format seems different from the one you're currently using.
+
+There are lots of things you can do at the grub prompt. This is handy:
+<code>
+grub> find vmlinuz
+grub> find /boot/vmlinuz
+</code>
+
+
+
+===== Converting ASCII Text to Binary... In One Line =====
+
+<code>
+echo -n "Hello World" | hexdump -ve '1/1 "ibase=8;obase=2;%03o\n"' | bc | while read line; do printf "%08s\n" $line | tr ' ' 0; done
+</code>
+
+This illustrates several interesting features:
+
+''echo -n'' Suppresses then ''newline'' character.
+
+''hexdump -v'' Shows the second ''l'' of ''Hello'' which would otherwise be replaced with an asterisk ditto-mark.
+
+''hexdump -e '1/1 "ibase=8;obase=2;%03o\n"''' Formats the output of ''hexdump'' as "one byte, once", then prefix ''ibase=8;obase=2;'', then output the byte as a three digit, zero-padded octal number, followed by a ''newline''."
+
+Note the way that the format string of ''hexdump'' must be enclosed in double-quotes.
+
+''bc'' Takes single lines as input, and outputs what is effectively a multi-line file.
+
+''while read line;'' Reads each line of ''bc'' into the variable ''$line'' turn and formats it in turn.
+
+''printf "%08s\n" $line'' Formats ''$line'' to make sure that every piece of output is a left-padded string followed by a newline. Unfortunately, ''printf'' pads with spaces, not zeros.
+
+''tr ' ' 0'' Converts those spaces to zeros.
+
+:!: Note that ''printf "%08d\n" $line'' is a better solution - the ''d'' (decimal number) format does left-pad with zeros - while the ''s'' (string) format doesn't.
+
+
+
+===== Converting ASCII Text to Dots in an XPM... In One Line =====
+
+Okay, so it's a long line - and only I might ever want to do this (I was thinking about using it for watermarking) but here it is anyway...
+
+<code>
+echo -e "! XPM2\n8 11 2 1\n0 c #ffffff\n1 c #000000" > out.xpm; \
+echo -n "Hello World" | hexdump -ve '1/1 "ibase=8;obase=2;%03o\n"' \
+| bc | while read line; do printf "%08d\n" $line; done >> out.xpm
+</code>
+
+===== getent, ypcat & cat =====
+
+Note the distinct functions of:
+
+''getent passwd'' shows the content of the password database as any program looking for authorisation would look it up - the combination of local file and network database (if any).
+
+''ypcat passwd'' shows the content of a YP/NIS passwd map. The result __doesn't__ include the data in the local ''/etc/passwd''
+
+''cat /etc/passwd'' shows the content of the local ''/etc/passwd'' file, but __NOT__ anything from a network database such as YP/NIS.
+
+
+===== Graphviz =====
+
+''dot'' looks handy!
+
+===== Resetting The Bash Input Field Separator (IFS) =====
+
+Usually the input field separator is whitespace - by temporarily resetting it, you can easily split strings into parts.
+<code>
+echo $PATH
+IFS=:; for i in $PATH; do echo $i; done; unset IFS;
+</code>
+
+===== Fix Firefox =====
+
+Mozilla Firefox has an alarming habit of refusing to start again after a crash or a power failure. This is because it hasn't had a chance to delete two lock files which tell an instance of the application that it's already running.
+
+Fortunately, this is easy to fix with a script like this:
+
+<code>
+#!/bin/bash
+IFS = $'\n';
+for i in $(find ~/.mozilla -name "*lock");
+do
+rm "$i" && echo "$i removed";
+done;
+</code>
+Not perfect - it removes "adblock" chrome. Try:
+<code>
+for i in $(find ~/.mozilla -regex ".*[^b]lock");
+</code>
+How about this?
+<code>
+#!/bin/bash
+# This script removes the lock files from a user's .mozilla directory,
+# and makes Mozilla Firefox (or IceWeasel) work if their box has crashed
+# in the middle of a session. Just click the script and fixfox fixes it!
+# This version:
+# 1. Copes with spaces in filenames (now Firefox's subdirectories are named
+# (stupidly IMHO) "Default User" rather than "default").
+# 2. Doesn't remove the "blocklist.xml" file, which was accidentally wiped.
+# 3. Gives a nice GUI output.
+# 4. Won't run twice if you accidentally double-click (using a lockfile).
+# 5. Removes the lockfile even if the process is killed half way through.
+# (c) James Wallbank 2008-07-10, 2008-08-20 (GPL3)
+
+LockFile=/tmp/.fixfox.lock
+if [ ! -f $LockFile ]
+then
+        echo "$(pgrep fixfox)" > $LockFile
+else
+        exit
+fi
+trap "rm -f $LockFile; exit" INT TERM EXIT
+unset OUT
+export IFS=$'\n'
+for i in $(find ~/.mozilla -name "*lock")
+do
+        rm "$i" && OUT+="$i" && OUT+="\n"
+done
+if [ -n "$OUT" ]
+        then zenity --info --title="FixFox Repair Report" \
+--text="$(echo -e "Lock files removed:\n$OUT")"
+        else zenity --info --title="FixFox Repair Report" \
+--text="$(echo -e "No action taken\nNo lock files discovered.\n")"
+fi
+</code>
+
+Note: I did end the script did end with this line:
+
+<code>
+rm -f $LockFile
+</code>
+
+However, it's not needed because the ''trap'' command catches the script exiting and does the job anyway.
+
+===== apt-get =====
+
+Using ''apt'' is virtually as simple as using ''urpmi''.
+
+<code>
+apt-get install <packagename>
+vim /etc/apt/sources.list
+apt-get update
+apt-cache search --names-only <software>
+</code>
+
+===== zenity =====
+
+Zenity is a command I wish I'd known about five years ago! It's like ''xdialog'' but better, providing a nice graphical input/output for shell scripts.
+
+<code>
+#!/bin/bash
+TEST="hello"
+if [ -n "$TEST" ]
+then zenity --info --title="Test Information" --text="X"$TEST"X"
+else zenity --info --title="Test Information" --text="XNULLX"
+fi
+</code>
+
+Note in this code the quotes around ''$TEST''. Without these, the script will misbehave if ''$TEST'' is a null string (''""'').
+
+  * Calendar, File Selector, Text Input, Progress Bar, Job Control, Radio Buttons, Checkboxes...
+
+===== NIS Automounting Issues =====
+
+This is a really thorny issue that we've had at Access Space. GNOME and KDE automounting processes assume that normal users are part of various device groups. Because we're distributing group information via NIS they aren't, so automounting doesn't work.
+
+A solution may be ''pam_group.so''. When a user logs in through a service which uses
+''pam_group.so'', they are automatically assigned to some groups temporarily.
+
+Add a line to /etc/pam.d/gdm
+<code>
+auth  optional  pam_group.so *;*;*;Al0000-2400; audio,video,cdrom,floppy,plugdev,netdev,powerdev
+</code>
+
+This should also sort out permissions allowing NIS users to access local sound and video devices. I've observed that you need to reboot to get /etc/pam.d/ changes to take effect.
+
+Also add several lines to /etc/fstab
+<code>
+/dev/sda1 /media/usb_a  auto,vfat  noauto,user,fmask=133,dmask=022  0  0
+#... other similar lines
+/dev/sde1 /media/usb_e  auto,vfat  noauto,user,fmask=133,dmask=022  0  0
+</code>
+
+  * I've recently read that a more general solution may be to edit ''/etc/pam.d/common-auth'' than ''/etc/pam.d/gdm''. Handy if you want to use ''kdm'' or ''xdm''. I haven't tested this.
+
+===== Debian Etch Multimedia Issues =====
+
+Because of their dedication to Open Source, a whole load of Debian Etch Mutimedia stuff doesn't work out of the box.
+
+  - Edit ''/etc/apt/sources.list'' to include Debian Multimedia sources. 
+  - Edit ''/etc/apt/sources.list'' and append ''non-free contrib'' to your existing Debian network sources, after the entry ''main''.
+  - ''apt-get install debian-multimedia-keyring''
+  - ''aptitude install'' whatever non-free goodies you want.
+
+My /etc/apt/sources.list looks like this:
+
+<code>
+deb http://ftp.uk.debian.org/debian/ etch main non-free contrib
+deb-src http://ftp.uk.debian.org/debian/ etch main non-free contrib
+
+deb http://security.debian.org/ etch/updates main
+deb-src http://security.debian.org/ etch/updates main
+
+deb http://debian-multimedia.fx-services.com/ stable main
+deb-src http://debian-multimedia.fx-services.com/ stable main
+</code>
+ 
+Next up, it may be that sound doesn't work on YouTube.
+
+  - ''apt-get install alsa-oss''
+  - Edit ''/etc/iceweasel/iceweaselrc'' to add a line that reads: ''ICEWEASEL_DSP="aoss"'' (instead of ''"none"'')
+  - ''chmod 666 /dev/snd/*'' (IMHO this is a really slack solution - by doctoring ''/etc/pam.d/gdm'' as I suggest above then mode 660 should be fine - but it isn't!)
+
+===== A Nasty Shock With /etc/fstab =====
+
+Today I had a nasty shock with my laptop. I'd been messing around with another laptop hard-disk, connected to my own laptop via USB. After a few minutes of copying, the disk spontaneously unmounted itself. I reckon this was ''hald'' behaving badly.
+
+When I came to reboot then __nothing happened__. The system threw an error so serious that e2fsk __failed__. I had to "Enter root password for maintenance". When I ran ''e2fsck'' manually on ''/dev/hda1'' then it failed. It told me that the superblock was corrupt, and I should use another one. I used ''dump2fs /dev/hda1 | grep Backup'' to find an alternative superblock, then ''e2fsck -y -b 32768 /dev/hda1''. Sounds logical, right? Wrong! It failed again.
+
+The issue was much simpler than I'd thought. ''/etc/fstab'' was corrupted by ''hald'' so I didn't have an entry for ''/'' or ''/home''. By booting from a recovery CD and editing ''/etc/fstab'' back to some sane settings, the laptop booted again no problem.
+
+Thank goodness ''e2fsck -y'' (answer "yes" to all questions) doesn't seem to have lost anything. Phew!
+
+===== LaTeX Issues =====
+
+To use LaTeX install ''texlive'', not ''tetex'' which is no longer supported.
+
+  * ''vim eg1.tex'' creates a tex source code file.
+  * ''latex eg1.tex'' interprets the ''eg1.tex'' and outputs ''eg1.dvi''
+  * ''dvipdfm eg1.dvi'' outputs ''eg1.pdf''
+
+Ligatures  (two letters that run together, like ff & fi) didn't work with the ''tetex'' version of ''/usr/bin/latex'', but with the ''texlive'' version they do.
+
+===== Separating Out JPEGs =====
+
+Okay, so here's the problem. You have a bunch of files which are named arbitrarily (i.e. with no file extensions) but you'd like to tidy them up and give them nice, informative names. Here's how:
+
+Step One - Rename the JPEGs
+
+<code>
+for i in *; do if [ "$(file -bi $i)" = "image/jpeg" ]; then mv $i $i.jpg ;fi; done
+</code>
+
+Step Two - Remove the non-JPEGs
+
+Top tip! Test this with ''echo'' first (line one). When you're happy with what's going to happen, knock out the ''echo ""'' (line two).
+
+<code>
+for i in *; do if [ "$(file -bi $i)" != "image/jpeg" ]; then echo "rm $i" ;fi; done
+for i in *; do if [ "$(file -bi $i)" != "image/jpeg" ]; then rm $i ;fi; done
+</code>
+
+===== Debian Lenny Sound =====
+
+Recently I upgradedd to Debian Lenny and had issues with video and sound. My conclusions:
+
+  * ''alsaconf'' - use it!
+  * If you're importing users from another system, then make sure they're in the groups that Debian expects them to be in. (A simple tip if you're importing users is to make a dummy user during installation, just so that ''/etc/group'' shows you which groups Debian requires to allow hardware access.)
+  * Use the ''flashplugin-nonfree'' from etch-backports. :!: This information may be out-of date by mid February-2009.
+  * Edit /etc/iceweasel/iceweaselrc to say ''auto'' not ''none'' for the iceweasel sound device.
+
+===== Debian Lenny Sound Revisited =====
+
+I've set this up on a fresh Lenny install, and things are a lot smoother. Here are the only modifications I made to get sound working.
+
+== Definitely Essential ==
+
+  * ''chmod a+rw /dev/dsp ; chmod a+rw /dev/snd/*'' (because I use NIS for authentication, and my users are NOT in group ''audio''). I've put these commands in ''/etc/rc.local'', but I don't like this! I'd rather get a robust solution by doctoring ''/etc/pam.d/common-auth'' - but I can't seem to get it to work reliably between reboots over an extended period. :-/
+  * ''vim /etc/iceweasel/iceweaselrc'' - because Iceweasel still specifies ''none'' rather than ''auto'' as its sound device! :-/
+  * Get rid of flash plugins you have installed in ''~/.mozilla/plugins''. Install just //one// flash plugin as root.
+  * Remove ''mozilla-flashplugin'' (the Debian included GPL Flash Plugin) by hand from ''/usr/lib/'' - ''aptitude'' won't remove it without removing the whole of GNOME as well!
+
+== May Not Be Essential, Definitely Handy ==
+
+  * Now ''aptitude install flashplugin-nonfree'', or for an even newer version, download the newest flash plugin from Adobe's site (choose the Ubuntu '.deb' version) and install it with ''dpkg -i ./install_flash_10_plugin.deb''.
+  * ''alsaconf'' - Sets up the soundcard anew.
+  * Set up Debian Multimedia software sources. (As root wget the keyring from the debian multimedia site; install it with ''dpkg -i ./<keyring file>.deb''; ''vim /etc/apt/sources.list'' as appropriate; ''aptitude update'' - now you're set!)
+  * ''aptitude install vlc'' - VLC is a superb video tool, and it's libraries //may// help YouTube sound and Video to work. Even if they don't, you want it!
+  * Edit ''/etc/pam.d/gdm'' (see NIS Automounting Issues above) so that your local users get added to group ''audio''. You must reboot for this to take effect. This solution is neater and more secure than ''chmod a+rw /dev/audio''.
+
+== Note ==
+
+  * Check http://www.mozilla.com/en-US/plugincheck/ to ensure you have the latest flash plugin.
+
+  * Remove symbolic link ''/etc/alternatives/flash-mozilla.so'' (links to ''/usr/lib/swfdec-mozilla/libswfdecmozilla.so'') to ensure that you're using the latest Flash plugin.
+
+
+===== Debian Lenny Software Sources =====
+This is ''/etc/apt/sources.list''. To add backports and debian multimedia it's necessary to download and install public decryption keys in order to verify the integrity of the software source. Read the documentation on their websites.
+
+I'd further recommend editing ''/etc/apt/apt.conf'' with the single line ''APT::Default-Release "testing";'' to specify the default version in use. To install from backports it's necessary to specify the source thus: ''aptitude -t etch-backports install appname''.
+
+Note that my laptop has no optical drive, so I've discarded the install ''cdrom:'' lines.
+
+<code>
+deb http://ftp.uk.debian.org/debian/ lenny main contrib non-free
+deb-src http://ftp.uk.debian.org/debian/ lenny main contrib non-free
+deb http://security.debian.org/ lenny/updates main
+deb-src http://security.debian.org/ lenny/updates main
+deb http://www.debian-multimedia.org lenny main
+deb http://www.backports.org/debian etch-backports main contrib non-free
+</code>
+
+Now (as of Nov2010) I'm working with the following ''/etc/apt/sources.list'' ...
+<code>
+deb http://ftp.uk.debian.org/debian/ lenny main contrib non-free
+deb-src http://ftp.uk.debian.org/debian/ lenny main contrib non-free
+deb http://security.debian.org/ lenny/updates main
+deb-src http://security.debian.org/ lenny/updates main
+deb http://www.debian-multimedia.org lenny main
+deb http://www.backports.org/debian lenny-backports main
+</code>
+
+I found that upgrading Iceweasel to a newer version required the following slightly different syntax:
+<code>
+aptitude install iceweasel/lenny-backports
+</code>
+
+This then allowed me to install extensions which require a newer version of Firefox than Lenny's Iceweasel.
+
+  * **NOTE** to anyone reading this who's confused - Iceweasel //is// Firefox - rebranded by the Debian people for arcane reasons.
+
+===== Debian Lenny Wireless Networking =====
+
+Make sure your wireless card is switched on! Make sure the module that supports your wifi hardware is inserted. Then...
+
+<code>
+iwlist scanning
+<code>
+
+... Discovers what wifi nodes are available.
+
+<code>
+iwconfig eth1 essid myhomenet
+<code>
+
+... Locks your card onto a named home network
+
+<code>
+wpa_passphrase myhomenet "a very secret passphrase" > /tmp/wpa_supplicant.conf
+<code>
+
+... Generates a temporary wpa_supplicant config file.
+
+<code>
+wpa_supplicant -Dwext -c/tmp/wpa_supplicant.conf -ieth1
+</code>
+
+... Launches wpa_supplicant, which has to keep running to use WPA encryption successfully.
+
+<code>
+wpa_supplicant -Bw -Dwext -c/tmp/wpa_supplicant.cong -ieth1
+</code>
+
+... Launches wpa_supplicant in the background - but I prefer to do ''Ctrl-Z'' followed by ''bg'' - because I like to see what's happening every step of the way.
+
+<code>
+dhclient eth1
+</code>
+
+... Grabs an ethernet address, and you're ready to go.
+
+The hardest bit for me was ''-Dwext''. I use an ipw2200 wifi card - and there's loads of suggestions online that I should use ''-Dipw''. Wrong! Nowadays ipw support is compiled into the kernel, so the standard ''wext'' (wireless extension) driver is all that's needed.
+
+===== Debian Lenny Vim & GPG =====
+
+Think you have vim installed by default under Debian Lenny? Check ''which vim'' and it answers ''/usr/bin/vim''. All's okay, right? Wrong! The installed version of vim is actually a cut-down version which won't handle complex ''.vimrc'' startup files.
+
+Fix this simply with ''aptitude install vim''.
+
+Why would you want a complex ''.vimrc''? I use one so I can turn off temporary cache files, and use vim to edit encrypted files directly. I only encrypt one file, which contains boring stuff like ISP passwords. I'm not organised - so public-key crypto is too complex for me. (I'm sure to lose my private key, and suddenly all my encrypted stuff will be gone!) Therefore I use symmetric encryption which relies on a passphrase which is in my head. Because my head is more reliable than my computers, and I only encrypt one file with one passphrase, this is safer. //That's the theory!//
+
+Here's a catch - because I don't use public key crypto, I've never activated gpg-agent - so gpg fails with the error "problem with the agent - disabling agent use". Thus I have to explicitly tell gpg not to use the public key managing agent with ''--no-use-agent''.
+
+Here's my ''~/.vimrc'':
+
+<code>
+set number
+augroup encrypted
+  au!
+  autocmd BufReadPre,FileReadPre *.gpg,*.asc set viminfo=
+  autocmd BufReadPre,FileReadPre *.gpg,*.asc set noswapfile
+  autocmd BufReadPre,FileReadPre *.gpg set bin 
+  autocmd BufReadPre,FileReadPre *.gpg,*.asc let ch_save = &ch|set ch=2
+  autocmd BufReadPost,FileReadPost *.gpg,*.asc
+                  \ '[,']!sh -c 'gpg --decrypt 2> /dev/null'
+  autocmd BufReadPost,FileReadPost *.gpg set nobin
+  autocmd BufReadPost,FileReadPost *.gpg,*.asc let &ch = ch_save|unlet ch_save
+  autocmd BufReadPost,FileReadPost *.gpg,*.asc
+                  \ execute ":doautocmd BufReadPost " . expand("%:r")
+  autocmd BufWritePre,FileWritePre *.gpg
+                  \ '[,']!sh -c 'gpg -c --no-use-agent 2> /dev/null'
+  autocmd BufWritePre,FileWritePre *.asc
+                  \ '[,']!sh -c 'gpg -c -a --no-use-agent 2> /dev/null'
+  autocmd BufWritePost,FileWritePost *.gpg,*.asc u
+augroup END 
+</code>
+
+This isn't perfect, but it does work. vim still complains with an error message "No matching autocommands", but this doesn't seem to affect functionality. Things I'd like to improve:
+  * If you enter the wrong passphrase you get an error message, instead of an open blank file named the same as your target file.
+  * If you enter two different passphrases on encryption, it throws an error and does nothing. (Right now it overwrites the target file!)
+
+===== Dokuwiki Mail Config =====
+
+My web hosts have been plagued by PHP mail functions through which other people send spam, so they've started to require an extra command line argument for sendmail called from PHP's mail() function. This breaks Dokuwiki's mail sender, //despite the fact// that it already does what they require - which is to identify a valid ''From:'' address. In addition they now want the ''From:'' address to be specified as a command line argument. (I'm unconvinced that this adds any extra security - but never mind).
+
+My solution has been to doctor ''wiki/inc/mail.php'' thus:
+
+<code>
+$params .= " -f".$from." ";
+</code>
+
+I insert this at line 104, directly before the line ''if($params == null){'' (so ''$params'' never is null).
+
+**NOTE**
+While the above works, it wouldn't have, had it turned out that the original value of ''$params'' was null. This improvement (below) sets ''$params'' to an empty string (//no characters//, not //null//!) if it is null.
+<code>
+$params = (is_null($params)?'':$params)." -f".$from." ";
+</code>
+
+===== Swiftmail =====
+
+You can avoid hacking the ''wiki/inc/mail.php'' script altogether by bypassing Dokuwiki's internal mail transport agent and using an external SMTP server. (Presumably the one provided by your web host.) I've used the Swiftmail plugin successfully - it just needs configuring with a valid "From:" address and the SMTP Server it needs to relay through.
+===== Dokuwiki Upgrade =====
+
+There are several ways to do this, but I'm going for **quick**, **reliable** and **safe**. Check [[http://www.dokuwiki.org/install:upgrade]]
+
+  - Log into the server via ssh
+  - ''cp -av wiki/ wiki_$(date +%Y%m%d)_backup/'' (Back up your wiki).
+  - ''%%wget http://www.splitbrain.org/_media/projects/dokuwiki/dokuwiki-2009-02-14b.tgz%%'' (Get the new wiki software).
+  - ''tar xzvf dokuwiki-2009-02-14b.tgz'' (Unpack the new software on the server).
+  - '''cp' -avf dokuwiki-2009-02-14/* wiki/'' (Copy files from the new wiki directory into your wiki, overwriting existing files).
+  - Remove redundant files (list available here: [[http://www.dokuwiki.org/install:upgrade]]).
+  - ''touch conf/local.php conf/msg'' (Tell the wiki to refresh its caches).
+  - ''mv install.php install.php.done'' (Deactivate the newly-supplied installer script).
+
+This method has the advantage of preserving your configured plugins and templates.
+
+----
+
+My personal method for removing the redundant files is this:
+
+  - From the root of your wiki directory: ''%%wget -O removeme.txt "http://www.dokuwiki.org/install:upgrade"%%''
+  - ''vim removeme.txt'' and delete all lines except the ones that list the files to scotch.
+  - Execute this:
+
+<code>
+for i in $(cat removeme.txt); do [ -f ./"$i" ] && echo rm -v ./"$i"; done
+</code>
+
+If that works, it'll list the remove commands you'll need. Now arrow up to get the command line again, and knock out the ''echo'' from the line to actually do the job. Execute it again and... job done.
+
+===== Screen Grab Anything =====
+
+Use ''xwd'':
+
+<code>
+ps ax | grep $(pidof X)
+</code>
+
+Find the XAUTHORITY file for X - listed after ''-auth''. Typically a file in ''/var/run/auth/''. Also use this output to check the DISPLAY that X is running on (probably '':0''.
+
+<code>
+export XAUTHORITY=/var/run/xauth/A:0-ODCG3R
+export DISPLAY=:0
+</code>
+
+Set the XAUTHORITY and DISPLAY shell variables. Then use xwd, grabbing the window that's identified by the user running X:
+
+<code>
+xwd -root > grab.xwd
+</code>
+
+Use imagemagick can convert xwd output to something more friendly.
+
+===== Getting a Graphics Tablet Working in Lenny =====
+
+Ouch! This was harder than it should have been, but still was reasonably doable in a couple of hours.
+
+  * First plug the USB tablet in.
+  * ''lsusb'' tells you what the tablet is - in my case: ''Bus 002 Device 003: ID 5543:0004 UC-Logic Technology Corp. Genius MousePen 5x4 Tablet''.
+  * ''cat /sys/bus/usb/devices/*/product'' allowed me to see the device was called ''Tablet WP5540U'' - good news, Google tells me it works!
+  * I tried to download the source and compile it, but I had version 0.5.0 and ''xmkmf'' didn't work to create a valid makefile. (Dependency problem, I expect.) Therefore I googled for wizardpen i386 deb and found a pre-compiled one which was a higher version.
+  * ''dpkg -i xserver-xorg-input-wizardpen_0.6.1rc2-1_i386.deb''. Note I also found version 0.7.0 but ''dpkg'' didn't like it.
+  * ''ls /usr/lib/xorg/modules/input/'' checks that ''wizardpen_drv.so'' is installed.
+  * I couldn't make ''wizardpen-calibrate'' to work. Instead I just found out how someone else did it (thanks harishankar =)). Edit ''/etc/X11/xorg.conf'' and add:
+<code>
+Section "ServerLayout"
+    Identifier     "Default Layout"
+    Screen         "Default Screen" 0 0
+    InputDevice    "Generic Keyboard"
+    InputDevice    "WizardPen Tablet"
+EndSection
+Section "InputDevice"
+    Identifier     "WizardPen Tablet"
+    Driver         "wizardpen"
+    Option         "Name"           "UC-LOGIC Tablet WP5540U"
+    Option         "SendCoreEvents" "true"
+    Option         "TopX" "0"
+    Option         "TopY" "0"
+    Option         "BottomX" "32739"
+    Option         "BottomY" "32745"
+    Option         "MaxX" "32739"
+    Option         "MaxY" "32745"
+EndSection
+</code>
+  * I rebooted and it worked. Probably I needn't have done this - I reckon just logging out and restarting X would have done the job.
+  * Job done! It's **really** hard to control the pad, and I'm completely confused by the clicking - but for drawing it's great. Not bad for £29.
+
+===== Adding New Users En Masse =====
+
+Adding new users, then making their passwords can be tedious. Usually we SSH into the server and add each one with a blank password, then su to that username, set the password with passwd, exit and then remake our YP database.
+
+In principal this is very wrong. It creates an short moment when a no-password login is possible. (Admittedly, it's only exploitable by someone who's already logged int to the server, but nonetheless, the principal is wrong!
+
+Therefore, it's much better to add someone with a password from the word go. Here's how:
+
+<code>
+sudo useradd -c "Example User" -m -g "examplegroup" -p $(openssl passwd -1 PLAINTEXTPASSWWORD) exampleuser
+</code>
+
+===== Nautilus Woes =====
+
+Sorry, developers, but the Nautilus GUI sucks. The design confuses the user and denies access to basic information, like "where am I in the directory tree?". Absurdly, if you click on a directory (because you want to go into it) it opens a new window. Why?
+
+  * Cure #1: Use Konqueror as a file browser ;-)
+  * Cure #2: Get Nautilus to behave in a more 'normal' way by:
+
+    - Edit > Preferences > Behaviour > Always Open in Browser Windows (tick it!)
+    - On the Location Toolbar now revealed click the "Pen Writing on a Notepad" icon (which doesn't mean "Edit"!) and "Toggle between button and text-based location bar".
+
+Yes, that's right - in order to get Nautilus to show the URL of the current window, you have to navigate through two levels of menu and a tab, tick a badly-described option, and then click a revealed cryptic icon that looks like it means something else. :-/
+
+Yes, folks, the Nautilus has two 'modes': "Browser Mode" (which makes Nautilus behave like a browser) and "Spatial Mode" (which makes Nautilus next-to-useless). Guess which one's the default.
+
+===== Thunar File Manager =====
+
+My final cure for Nautilus only came when I installed XFCE4. XFCE's Thunar file manager is lightweight and thoroughly satisfactory. Especially when you select "View > Location Selector > Toolbar Style" instead of "View > Location Selector > Pathbar Style". Job done!
+===== Symmetric Encryption =====
+
+If you're like me, you have a different password for everything. However, these can be hard to remember, so you need to store them somewhere that's:
+
+  - Very, very safely encrypted. //(This rules out home made encryption systems, security through obscurity.)//
+  - Unlockable with standard tools that you understand - not locked away in some keyring that requires KDE/GNOME/numerous libraries. //(This rules out "point-and-click" GUIs which you may not have available at the crucial moment.)//
+  - Relies on ONLY a passphrase to unlock a single file - doesn't rely on additional personal files, like private keys, which can also get lost. //(This rules out public key encryption.)//
+
+Here's how to encode with Blowfish. No, it's probably not ultimately strong, but it should resist visa card scammers or nosey neighbours. To get really systematic, though, don't encode the same data with different pass keys. Nor should you encode different data with the same pass key.
+
+<code>
+openssl bf -e -salt -in eg.tgz -out eg.tgz.bf
+openssl bf -d -salt -in eg.tgz.bf -out eg.tgz
+</code>
+
+===== Debian Java Deglitching =====
+
+If you've just installed Sun Java6 (it's best to get the latest version from Sun) then your default 'java' and 'javac' binaries need not be the newest version - even though you have the latest version installed.
+<code>
+java -version
+javac -version
+</code>
+If you're getting errors compiling (sometimes quite simple) java, it could be that you need to try:
+<code>
+update-alternatives --config java
+update-alternatives --config javac
+</code>
+
+This ''update-alternatives --config'' command is available for many functions in Debian. Try ls /etc/alternatives to see what it operates on. What I don't know is how to list all the keywords which it'll operate on.
+
+===== Java on Debian Squeeze =====
+
+I just came across a small glitch with Java on Squeeze. It's perfectly possible to install Sun's latest version of Java from the "Non Free" repository (''sun-java6-jre'') but neglect to install the browser plugin. If this happens your browser complains that Java isn't installed (not true - the Java //plugin// isn't installed). __Don't__ follow the links to Sun's complicated and confusing web page (lousy documentation, guys!) instead just...
+
+<code>
+aptitude install sun-java6-plugin
+</code>
+
+===== Network Analysis & Deglitching =====
+
+We've had loads of problems with ''NEW not SYN'' packets. We had assumed that these were caused by bogus packets from the outside world hitting our firewall. Now we're convinced that the firewall NAT table is failing. Time for a new distro, I think.
+
+Particularly useful tools for network analysis have proved to be:
+
+  * Wireshark
+  * ''mtr''
+
+''mtr'' is even more useful with the ''-u'' option to pin with UDP (not ICMP) packets. Under Debian Lenny this package is not available, but ''mtr-tiny_0.75-2_i386.deb'' (compiled for Ubuntu Linux) installs with ''dpgk -i'' and runs fine.
+
+Note that a particularly cool way to use ''mtr'' is by limiting the ping count, outputting a summary and redirecting it to a log file. In my opinion the graphical interface is a red herring.
+
+===== Hostname from IP Number =====
+
+<code>
+host NNN.NNN.NNN.NNN
+</code>
+Does a DNS lookup on an unknown IP number. Simple!
+
+===== De-Glitching SSH =====
+
+If you re-install an SSH server then it's likely you'll forget to update the SSH keys. This means that SSH clients will object, saying that the key has changed. Konquerer running ''%%fish://%%'' protocol will simply fail.
+
+The issue is to remove the fingerprint for the old key from ''~/.ssh/known_hosts''. This is a plain text file. In earlier versions you could simply edit the text file, find the line that lists the hostname or IP number you're trying to connect to, delete that line and save.
+
+Now the file is encrypted, so either you can delete the whole file, or remove the key with a handy tool:
+<code>
+ssh-keygen -R hostname
+</code>
+This searches through the file, identifies the relevant scrambled line, and removes it. Job done.
+
+===== Automating SCP Transfers =====
+
+''scp'' copies files over SSH. All you need is an SSH server running with the ''scp'' extension compiled in (almost all servers do have this feature) and you can do secure file transfer. The problem? The SSH server prompts for a password combination when scp is invoked, so automating scp appears to be awkward.
+
+In fact it's easy by using pre-shared public keys. The client machine generates a secure key pair, and then you copy the public half of the key to the server, and add it to a list of "pre-approved" connections. The server can then use the public key to definitively identify the client on connect, without prompting.
+
+<code>
+client$ ssh-keygen -t rsa
+client$ scp ~/.ssh/id_rsa.pub server:
+client$ ssh server
+server$ cat id_rsa.pub >> .ssh/authorized_keys
+server$ rm id_rsa.pub
+server$ exit
+</code>
+
+===== Background Images for twm Desktops =====
+
+<code>
+xli -onroot -fillscreen ~/.twmdesktop1024.png
+</code>
+
+Note that ''xli'' can also be used to provide backgrounds for terminal windows.
+
+===== X Displays Showing Windows Invoked Elsewhere =====
+
+Typically X is configured so that it will refuse to open windows which are activated from non-graphical shells. This can be fun, so make sure that when X is invoked it doesn't include the option ''nolisten''. On Debian Lenny this option is in ''/etc/X11/xinit/xserverrc'' - simply remove it and restart X.
+
+===== Stopping Trackpad Glitches =====
+
+You're typing, then suddenly you're three lines above and typing into the middle of the previous paragraph. Annoying! This is often because your thumb brushes your laptop's trackpad.
+
+Fortunately you can turn it off while you're typing. There are three steps:
+
+1. Edit ''/etc/X11/xorg.conf''. You need to include the following entries:
+
+In the section called ''Section "InputDevices"''...
+<code>
+    InputDevice    "Synaptics Touchpad"
+</code>
+and a completely new section...
+<code>
+Section "InputDevice"
+    Identifier    "Synaptics Touchpad"
+    Driver      "synaptics"
+    Option      "SendCoreEvents" "true"
+    Option "SHMConfig" "on"
+EndSection
+</code>
+I'm using Debian Lenny. Some O/S's may require more entries in ''Section "InputDevice"''.
+
+2. Log in to ''X''. Be warned that even a small error in ''/etc/X11/xorg.conf'' may render ''X'' nonfunctional. Don't panic, read the error report, then log in to the terminal and re-edit the file. If necessary, step back to how it was before.
+
+3. Start ''syndaemon''. This should be started by the user who's logged in to the XSession. ''GNOME'' and ''KDE'' have start-up scripts that'll execute on login. Not sure about ''twm'' - I just invoke the command-line ''syndaemon -d''.
+
+===== Run Commands on Login with twm =====
+
+''GNOME'' and ''KDE'' have their own "autorun" directories that run commands with user-level permissions on login. I use ''twm'' - so these systems are unavailable. However, XWindow itself has all the functionality you need.
+
+Simply create''~/.xsessionrc'' which will run as the logged in user. It's completely independent of window manager or desktop environment - so it should run with any instance of ''X''. Nice!
+
+My ''.xsessionrc'' now reads:
+<code>
+xli -onroot -fillscreen ~/.twmrc1024.png
+syndaemon -d
+uxterm -geometry 169x4-1-1 &
+</code>
+
+===== Cleverer Listing =====
+
+Sometimes you want to manipulate subsets of a directory listing. While it's possible to devise some clever pattern-matching, thisy overlooks the surprising power of ''ls'':
+<code>
+ls -I *.jpg
+</code>
+... according to the manual, this //should// list everything in the current directory that does **not** have a ''.jpg'' file extension. In my version __it doesn't work__ - but this does:
+<code>
+ls --ignore="*.jpg"
+</code>
+This and other switches make ''ls'' much handier than you think. Check the manual, but test as well.
+
+===== Managing Numbered Files =====
+
+**Problem:** I have lots of photos scattered around nested subdirectories. The photos themselves are sequentially numbered, but the subdirectory names are variously named. What's the first photo in the sequence? What's the last photo in the sequence? How many photos are there?
+
+**Solution:**
+<code>
+find photos_20100205/ -type f -name "ds*" -exec basename {} \; | sort -nr | tail -1
+dscf3816.jpg
+find photos_20100205/ -type f -name "ds*" -exec basename {} \; | sort -n | tail -1
+dscf3916.jpg
+find photos_20100205/ -type f -name "ds*" -exec basename {} \; | sort -n | wc -l
+94
+</code>
+
+===== Local Shared Objects (Flash Cookies) =====
+
+Flash writes "Local Shared Objects" which are now being used by advertisers and other net.annoyances to track your web usage. Check out:
+
+<code>
+find ~/.macromedia/Flash_Player/#SharedObjects/ -type f -exec ls -l {} \;
+</code>
+
+Liberal use of ''rm'' may be indicated.
+
+===== Extracting Substrings With Bash =====
+
+A typical question is "is this argument a switch or a parameter?". If it begins with "-" it's likely to be a switch. Check this:
+
+<code>
+[ "${1:0:1}" = "-" ] && echo "Switch" || echo "Other Argument"
+</code>
+
+Simple, eh? No - in fact it's not obvious. To clarify...
+<code>
+${variable:start:number}
+</code>
+...takes a variable, starting at a position and extracts a number of characters. So...
+<code>
+$ example="zaejf"
+$ echo $example
+zaejf
+$ echo ${example:2:2}
+ej
+</code>
+
+===== Concatenating Strings with Bash =====
+
+And in case it's not obvious, you can concatenate strings thus:
+
+<code>
+STR="a string"
+STR2="${STR}, another string"
+echo $STR2
+a string, another string
+</code>
+
+===== Adding Extra Directories To The Path =====
+
+For a temporary change:
+
+<code>
+PATH=$PATH:/home/james/bin
+export PATH
+</code>
+
+Or how about using ''$HOME'' instead of your home directory?
+<code>
+PATH=$PATH:$HOME/bin
+export PATH
+</code>
+
+To make a lasting change that'll survive reboots add appropriate lines (as above) to:
+
+  * A single user - modify ''$HOME/.bash_profile''
+  * All users except root - modify ''/etc/profile''
+  * root - modify ''/root/.bash_profile''
+
+Want to chop things back off the path? Use the ''${%}'' construct:
+
+<code>
+echo $PATH
+/usr/local/bin:/usr/bin:/bin:/usr/games:/wrong/bin
+PATH=${PATH%:*}
+echo $PATH
+/usr/local/bin:/usr/bin:/bin:/usr/games
+export PATH
+</code>
+
+===== Upgrading Debian Lenny to Squeeze =====
+
+I've just upgraded, and it went more smoothly than ever before. My method was pre-prepared for, and suggests a very strong way to partition disks:
+
+hda1: / ~6GB\\
+hda2. swap ~1GB\\
+hda3. /local ~6GB (unused)\\
+hda5. /local2 ~1GB (unused)\\
+hda6. /home ~the rest.\\
+
+I had initially installed Debian Etch on ''hda1'', with swap on ''hda2'', and a second swap on ''hda5''. The idea was to make provision for two entirely separate O/S's. That second swap NEVER got used, but it turned out to come in useful after I formatted it as ''ext3''.
+
+When I upgraded Etch to Lenny, I simply booted from the net install DVDROM and installed Lenny on ''hda3''. I retained swap on ''hda2''.
+
+Lenny's ''grub'' install detected the pre-existing copy of Etch, so I was able to fall back to it by selecting the old partition from the boot menu. Backward compatible - nice! All I had to do to adjust my new Lenny install was to add ''/home'' as ''/dev/hda6'' into ''/etc/fstab''.
+
+This time around I did it the same - but better. I downloaded the Squeeze NetInstall to ''hda5'' (that's how one spare gigabyte on a separate partition came in useful) and mounted it as ''/media/cdrom''. I copied my proprietary wifi driver ''/lib/firmware/ipw2200-bss.fw'' to ''/media/cdrom/ipw2200-bss.fw''
+
+As instructed on the Debian site I downloaded ''vmlinuz'' and ''initrd.gz'' and put them in a directory ''/media/cdrom/boot/'' - making my ''hda5'' potentially bootable. I doctored the active ''/boot/grub/menu.lst'' on ''hda3'' (note NOT ''/media/cdrom/boot/grub/menu.lst'' on ''hda5''), rebooted and selected my new Squeeze netinstall partition to boot from the ''grub'' boot menu.
+
+That way I was able to install off my own hard disk, write Squeeze over my old Etch, and keep Lenny safely on ''/dev/hda3'' throughout the process. Despite using no external media, //at no stage// did I have a non-bootable machine. At //any// point in the reinstall process (say there was a power failure) I could reboot back into my previous working O/S, or the Squeeze netinstall partition. Superb!
+
+Any gripes? Sure
+  * Debian install instructions are sparse. Fine if you already know what you're doing, but tough for a beginner.
+  * Squeeze initially failed to detect the ''debian-6.0.1a-i386-netinst.iso'' on ''/dev/hda5''. I selected it again and it worked.
+  * To drop back to the installer menu if a stage fails you need to press //Escape// - but this isn't noted on the installer screen. (Remember, developers, at this stage many people with just one PC won't have a bootable system or access to the web - you have to give them ALL the documentation and hints you can).
+  * Initially I tried loading ''ipw2200-bss.fw'' from a USB stick. I tried repeatedly with several sticks but it didn't detect it. Copying to the hard disk install medium was neater anyway.
+  * I couldn't get it to netinstall over wifi, I had to plug in a cable. Afterwards wifi worked fine - but I think the problem is that netinstall can't handle ''WPA''. This is non-critical, but it does purport to handle wifi, which means it does need to load drivers from USB and configure WPA successfully.
+
+===== Essential WiFi Tip =====
+
+If you're using a laptop with Linux, install ''rfkill''. If you accidentally press a particular key combo, you may disable your wifi card. then you may **only** be able to reenable it by unblocking the card - the same keypress may not work to reverse the process.
+
+<code>
+rfkill unblock all
+</code>
+
+The good news is that unblocking is as simple as this. The catch is that ''rfkill'' is NOT installed by Debian by default.
+===== Debian Squeeze Headswap =====
+
+Okay, so once you run out of hard disk space, you want to copy your old system to a new hard disk, get it ready, swap the hard disks, and bingo! A headswap. But it's not that simple. The software on the hard disk (the head) has knowledge about the computer hardware (the body) built into it. When the new body starts with the contents of the old brain, it's paralysed!
+
+This is what I did:
+
+  - Attach the new hard disk externally with a USB cable.
+  - ''fdisk -l'' showed me that it detected as ''/dev/sdb''.
+  - Use ''fdisk'' to partition it:
+    * sdb1=8GB (/); sdb2=2GB (swap); sdb3=150GB (/home); sdb5=8GB (spare); sdb6=2GB (spare swap);
+  - Use ''mkfs'' to format it. (I used ''ext4''.
+  - ''mkdir /mnt/sdb1 /mnt/sdb3''
+  - ''mount /dev/sdb1 /mnt/sdb1'' and ''mount /dev/sdb3 /mnt/sdb3''
+  - ''aptitude install rsync''. (I can't beleive that ''rsync'' isn't included as a core tool in Debian Squeeze!)
+  - Use ''rsync -av'' to copy over ''/home''. Watch out for trailing slashes - yes for the source, none for the destination.
+  - Use ''rsync -av'' to copy over most of the contents of ''/'', EXCEPT for ''/tmp'', ''/sys'', and ''/proc'', which I made as empty directories.
+  - **Ensure** that your new ''/tmp'' is world-writable. (''chmod 777 /mnt/sda1/tmp/''). //I failed to do this at first// - which caused some significant confusion. (The symptoms? ''root'' can login via TTY and graphically, while ''user'' could only login via TTY but not graphically.)
+  - **Edit** your new ''fstab'' (probably ''/mnt/sda1/etc/fstab'' at this stage) to include the correct ''blkid'' for each device. (Use ''vim :r !blkid'' to paste the details into your document for convenient editing.) //I failed to do this at first// as well, forgetting that Squeeze now uses block device attributes. This made my newly installed ''grub'' fail to configure correctly again and again.
+  - **Edit** ''/mnt/sdb1/etc/grub.cfg'' so that it contains the correct ''blkid'' information for the new hard disk. Yes, I know that it says //"do not edit this file"//, but I did this and I suspect that it may be critical for the success of the later re-install of grub. There's probably a better way to do this - more research needed.)
+  - cd ''/mnt/sda1''
+  - ''chroot .''
+  - ''grub-install /dev/sdb''
+At this stage I started to get nervous - while I know that the correct thing to do is to reconfigure grub2 on sdb, I REALLY, REALLY didn't want to break grub2 on sda, particularly as I had no optical drive nor boot DVD, nor bootable USB stick to hand. __Make sure you have another networked device to hand__, so that you can read online documentation to help you fix your headswapped machine, which won't boot at first.
+  - Power down, remove the laptop from the power, extract the battery, remove the old hard disk, fit the new hard disk. Power up.
+  - Okay, so ''grub'' fails. Stay calm.
+  - Edit ''e'' the grub commands so that you specify ''root=/dev/sda1'' instead of the ''blkid''. Take out the ''--search'' line, you don't need it for now.
+  - Ctrl-x and boot.
+  - Login as root. ''aptitude purge grub2; aptitude install grub2''. And relax.
+I'm sure that there's a cleverer way to do this final step, but at this stage I was getting bored and nervous, and just wanted a clean slate with my new grub configuration. Next time I'll do some more research.
+===== nmcli =====
+
+Now the Squeeze wifi management is far, far more complex - in the guise of making it easier (which it does for the novice). If you're using GNOME then just click a couple of friendly buttons and you're up and running. (You know they're friendly because they have rounded corners... Sigh.)
+
+I want to use ''twm'' (I don't want my valuable RAM and CPU cycles wasted on icons, menus and desktops) so I'm looking into how to get wifi up from the command line. This is proving resistant - at the moment I've successfully used GNOME to establish the settings, which then when I reboot and log into twm, still stay up. Okay, so that works, but it's cheating - I want to get the system up without GNOME.
+
+The tool to use is, apparently, ''nmcli''. I don't get it all yet. Here's what does work:
+<code>
+nmcli con list
+</code>
+... Shows the connections you have operating.
+
+===== ASCIIart for Debian Squeeze =====
+
+<code>
+aptitude install aview
+</code>
+
+''aview'' converts PNMs to ASCIIart using a number of different scales and logics. Even more convenient is the ASCIIart viewer ''asciiview'' which is included with the package. ''asciiview'' takes JPEGs (and other image formats) and passes them to ''aview'' as PNMs on the fly. It's even zoomable, and can save out in loads of ways as well. Nice!
+
+===== Inkscape Path Editing =====
+
+It's documented, but not obvious from the menus and GUI, that you can edit paths very precisely in Inkscape. By selecting a node or nodes with the node edit tool, it's possible to:
+
+  * Shift-B - Break the path at the selected node
+  * Shift-J - Join two selected nodes into a single node
+  * Shift-D - Duplicate the selected node in place
+  * Shift-C - Change the node to a //cusp node// (sharp corner)
+  * Shift-S - Change the node to a //smooth node// (smooth curve)
+  * Shift-Y - Change the node to a //symmetric node// (middle of a smooth curve)
+
+===== Raspberry Pi Setup with Linux =====
+
+I'm *boggled* that http://raspberrypi.org doesn't have this listed in big, simple letters.
+
+  * Download the Raspberry Pi image **''2012-10-28-wheezy-raspbian.zip''**
+  * Unzip it, which creates a file **''2012-10-28-wheezy-raspbian.img''**
+  * Put your SD card into a card reader or appropriate slot.
+  * Become root: **''sudo su''**
+  * Type **''mount''** and look for the line of output which refers to the mounted disk image. It'll look something like this:
+<code>
+/dev/mmcblk0p1 on /media/FC30-3DA9 type vfat (rw,nosuid,nodev,uhelper=udisks,uid=5513,gid=5513,shortname=mixed,dmask=0077,utf8=1,showexec,flush)
+</code>
+  * Look for the "on" field and use it in the next command...
+  * **''umount /media/FC30-3DA9''**
+  * **''dd if=2012-10-28-wheezy-raspbian.img of=/dev/mmcblk0p1 bs=1''**
+  * Wait 15 whole minutes. Once the "$" prompt has reappeared, you're done!
+
+However, this is not ideal. You want to be able to see how your disk image is being written. How about this as an alternative strategy?
+
+  * **''pv -petr 2012-10-28-wheezy-raspbian.img | dd of=/dev/mmcblk0''**
+
+===== Bash Function For Random Passwords =====
+
+<code>
+XX=abcdefghij
+rpw(){ tr -cd $1 </dev/urandom | head -c8; echo; }
+rpw abcdefghijklmnopqrstuvwxyz
+</code>
+
+How about a second argument for length?
+
+<code>
+rpw(){ tr -cd $1 </dev/urandom | head -c$2; echo; }
+rpw [:alnum:] 8
+</code>
+
+Should allow a password with very variable data to be generated - but this should be shuffled.
+
+<code>
+rpw a-z 1;rpw A-Z 1;rpw 0-9 1;rpw '!$&*^@?' 1;rpw [:alnum:]'!$&*^@?' 8;echo
+</code>
+
+More tersely:
+<code>
+R='!$&*^@?'
+p(){ tr -cd $1 </dev/urandom|head -c$2;}
+p a-z 1;p A-Z 1;p 0-9 1;p $R 1;p [:alnum:]$R 8;echo
+</code>
+
+This bash script (below) generates a random password which includes:
+  * At least one lowercase letter
+  * At least one uppercase letter
+  * At least one numeral
+  * At least one punctuation character from an arbitrary list
+  * Twelve characters
+The final line shuffles the string, so that each specified character is in a non-specified position.
+<code>
+#!/bin/bash
+P='!$^&*@?'
+p(){ tr -cd $1 </dev/urandom|head -c$2;}
+O=$(p a-z 1)$(p A-Z 1)$(p 0-9 1)$(p $P 1)$(p [:alnum:]$P 8)
+fold -1<<<$O|shuf|tr -d "\n";echo
+</code>
+===== Shuffle a String with Bash =====
+This is not well documented - but can be handy!
+<code>
+s='ABCDE'
+echo $s | fold -1 | shuf | tr -d "\n"; echo
+CBDEA
+</code>
+A random number, 1-7.
+<code>
+s='1234567'
+OUT=$(echo $s | fold -1 | shuf | tr -d "\n";)
+echo ${OUT:0:1}
+</code>
+
+===== Kill a Command After a Particular Execution Time =====
+
+Try ''timeout''. Looks super-handy!
+
+===== Temperature Monitor for Raspberry Pi =====
+
+I used two DS18B20 digital temperature sensors, and wired them up to the Raspberry Pi with a single resistor to the data line. Then used this outrageously hacky script to visualise the output:
+
+<code>
+#!/bin/bash
+
+reset
+
+echo "Inserting Temperature Sensor Modules..."
+modprobe w1-gpio && echo "w1-gpio Module inserted (1/2)"
+modprobe w1-therm && echo "w1-therm Module inserted (2/2)"
+sleep 5
+
+while true; do cat /sys/bus/w1/devices/28-000*/w1_slave | awk -F'=' '/t=/ { printf "%.1f  ", $2/1000 }' | convert -background black -fill white -font /usr/share/fonts/truetype/freefont/FreeMono.ttf -pointsize 18 -page 82x24+1+5 text:- xpm:- | while read line; do echo "${line:2:80}"; done; sleep 5; done
+</code>
+
+===== A Bunch of Numbered Image Files =====
+
+Exactly why you might want a bunch of graphics files which feature nice numerals is not clear. But I did. Here's how I made them:
+
+<code>
+for i in $(seq -f "%04.0f" 10 ); do convert -page 150x50+18-2 -pointsize 50 text:<<<$i X$i.png; done
+</code>
+
+Notice the fixed width of 4 numerals, and the way that the page size is held down to a small size - if you don't do this, ImageMagick will assume that you want a page size of A4 - which uses a lot of pixels and a lot of processor time.
+
+===== Find a Fractional Approximation of An Irrational Number =====
+
+Though I say it myself, this is clever. (Well, I think it is...) 
+
+<code>
+TEST="(4*a(1))" #pi
+for i in $(seq 999)
+         do
+                 echo -n "$i/"
+                 bc -l<<<"$i*1/$TEST"
+         done | sort -t. -k2 | head | cut -d. -f1
+</code>
+
+The whole numbers, before the dot, represent the ten closest fractions (in order) to your target "TEST" - in this case, pi. Try also "sqrt(2)" or other irrational numbers.
+
+The less classy, but even more handy version is to replace "TEST" with "($1)" and then pass the number to be calculated to the script, either as a floating point number, OR as a bc expression!
+
+As a tweet, this can be expressed:
+<code>
+PI="(4*a(1))";for i in $(seq 999);do echo -n "$i/";bc -l<<<"$i/$PI"; done|sort -t. -k2|head -n1|cut -d. -f1 #Best3DigitFractionToExpressPi
+</code>
+
+===== USB Woes With VirtualBox =====
+
+Can't see USB devices with VirtualBox?
+
+Can you see them with ''lsusb'' in Linux? Yes? They're present, but you can't see them from within your boxed O/S?
+
+After some research I found that I wasn't featured in the group ''vboxusers''.
+
+Don't forget to log out and log back in to allow VirtualBox to pick up on the change.
